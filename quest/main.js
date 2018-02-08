@@ -1,0 +1,625 @@
+var board_size = 8;
+var moves_red = 0;
+var moves_blue = 0;
+var self = this;
+
+var against_AI = true;
+
+// Start with a random turn
+var current_turn = Math.random()>.5?"red":"blue";
+
+function switchTurn() 
+{
+	current_turn = current_turn=="blue"?"red":"blue";
+	
+	$(".board").removeClass("blue").removeClass("red")
+	$(".board").addClass(current_turn);
+
+	$(".turnstrip").css({"opacity":0});	
+	$(".turnstrip."+current_turn).css({"opacity":1});
+	
+	$(".piece").draggable();
+	$(".piece").draggable("destroy");
+	$(".piece."+current_turn).draggable({
+		start: function(){
+			var ad = getAdjacentBlocks($(this).parent());
+			$.each(ad, function(j,e) { 
+				if(!$(e).has(".piece").length && !$(e).has(".coin").length) { $(e).addClass("active"); }
+			});
+			// raise dragged piece above all others
+			$(".block").css({"z-index":100});
+			$(this).parent().css({"z-index":3000});
+		},
+		stop: function () 
+		{
+			$(this).css({top:0,left:0});
+			$(".active").removeClass("active");
+		}
+	});
+	
+	if(current_turn == "red" && against_AI) AI.playTurn();
+}
+
+function update() 
+{
+	if(current_turn == "red") moves_red++;
+	if(current_turn == "blue") moves_blue++;
+	
+	// rule: coins switch to either blue or red piece if surrounded by that color from 2 adjacent sides
+	// check if any coin is adjacent to red or blue piece
+	$(".coin").each(function() {
+		var ad = getAdjacentBlocks($(this).parent());
+		var blue_adjacent = 0;
+		var red_adjacent = 0;
+		$.each(ad, function(j,e) { 
+			if($(e).find(".piece.red").length) red_adjacent++;
+			if($(e).find(".piece.blue").length) blue_adjacent++;
+		});
+		if(red_adjacent>=2) { 
+			$(this).addClass("piece").addClass("red").removeClass("coin");
+			startAudioCoin();
+		}
+		if(blue_adjacent>=2) {
+			$(this).addClass("piece").addClass("blue").removeClass("coin");
+			startAudioCoin();
+		}
+	});
+	
+	// rule: any piece surrounded by 2 opponent pieces on sides gets "captured"
+	// rule: captured pieces are removed from board
+	if(current_turn == "red") {
+		checkTrapped("blue");
+		checkTrapped("red");
+	} else {
+		checkTrapped("red");
+		checkTrapped("blue");
+	}
+	
+	// rule: pieces that reach the opposite end row will be frozen (can't be moved anymore) and count towards the player score
+	// 
+	// rule: if all pieces of any player are captured and/or reached end row the game is over 
+	// rule: player with most pieces on the board wins
+	
+	// Freeze pieces that arrived at the last row
+	for (var i=0; i < board_size; i++) {
+		if($('#b_0_'+i+" .blue").length) startAudioFreeze();
+		$('#b_0_'+i+" .blue").addClass("blue-fixed").removeClass("blue");
+	}
+	for (var i=0; i < board_size; i++) {
+		if($('#b_'+(board_size-1)+'_'+i+" .red").length) startAudioFreeze();
+		$('#b_'+(board_size-1)+'_'+i+" .red").addClass("red-fixed").removeClass("red");
+	}
+	
+	var winner = checkGameOver();
+	if(winner == "tie") {
+		$(".board").removeClass("blue").removeClass("red").addClass("off");
+		alert("IT'S A TIE!");
+		startAudioWin();
+		return;
+	} else if(winner.length) {
+		$(".board").removeClass("blue").removeClass("red").addClass(winner);
+		alert((winner+" won!").toUpperCase());
+		startAudioWin();
+		return;
+	}
+	
+	switchTurn();
+}
+
+function checkGameOver() 
+{
+	// TODO what if last piece was trapped between 3 coins and opponent => no more possible moves
+	
+	var pieces_red = $(".piece.red").length;
+	var frozen_red = $(".red-fixed").length;
+	var pieces_blue = $(".piece.blue").length;
+	var frozen_blue = $(".blue-fixed").length;
+	
+	// rule: only check winners when both players played same number of moves or when both 
+	//       players have no more unfrozen pieces 
+	// rule: red wins if all blue pieces are captured and red frozen and active are more than blue frozen
+	// rule: red wins also if all pieces of red are frozen and are more than blue frozen pieces, even if 
+	//       blue still has unfrozen pieces
+	
+	// Do nothing if both players still have free (unfrozen) pieces
+	if(pieces_red && pieces_blue) {
+		return false;
+	}
+	
+	// ...now we know at least one of the players don't have free pieces,
+	//    let's check if both played the same number of moves and can still play
+	var red_can_play = (pieces_red>0) && moves_red<moves_blue && current_turn=="blue";
+	var blue_can_play = (pieces_blue>0) && moves_blue<moves_red && current_turn=="red";
+	if(red_can_play || blue_can_play) {
+		return false;
+	}
+	
+	// ...now we know that both players played the same number of moves. Let's check if we have a tie
+	// TIE
+	if( (!pieces_blue && !pieces_red) && (frozen_red == frozen_blue) ) {
+		return "tie";
+	}
+	
+	//...now that we know it's not a tie, let's see who won
+	
+	// red wins
+	if(  (!pieces_blue && (frozen_red+pieces_red > frozen_blue)) || (!pieces_red && frozen_red>frozen_blue)  ) {
+		return "red";
+	}
+	// blue wins
+	if(  (!pieces_red && (frozen_blue+pieces_blue > frozen_red)) || (!pieces_blue && frozen_blue>frozen_red)  ) {
+		return "blue";
+	}
+	
+	return false;
+}
+
+function checkTrapped(color) 
+{
+	$(".piece."+color).each(function() {
+		var ad = getAdjacentBlocks($(this).parent());
+		var opponent_adjacent = 0;
+		$.each(ad, function(j,e) { 
+			if($(e).find(".piece."+(color=="blue"?"red":"blue")).length) opponent_adjacent++;
+		});
+		if(opponent_adjacent>=2) { 
+			$(this).removeClass("piece").addClass("captured").appendTo(".cage");
+			startAudioCapture();
+		}
+	});
+}
+
+function getAdjacentBlocks(block) 
+{
+	// Get all adjacent blocks (cross)
+	
+	if(!$(block).hasClass("block")) return;
+	
+	var block_id = $(block).attr("id");
+	var block_row = parseInt(block_id.split("_")[1]);
+	var block_col = parseInt(block_id.split("_")[2]);
+	
+	var adjacents = [];
+	
+	// top & bottom
+	var tr = block_row-1;
+	if(tr >= 0) adjacents.push($("#b_"+tr+"_"+block_col));
+	var br = block_row+1;
+	if(br < board_size) adjacents.push($("#b_"+br+"_"+block_col));
+	
+	// left & right
+	var c = block_col+1;
+	if(c < board_size) adjacents.push($("#b_"+block_row+"_"+c));
+	var c = block_col-1;
+	if(c >= 0) adjacents.push($("#b_"+block_row+"_"+c));
+	
+	return adjacents;
+}
+function getDiaginalBlocks(block) 
+{
+	// Get all adjacent blocks (X)
+	var block_id = $(block).attr("id");
+	var block_row = parseInt(block_id.split("_")[1]);
+	var block_col = parseInt(block_id.split("_")[2]);
+	
+	var adjacents = [];
+	
+	// top
+	var tr = block_row-1;
+	if(tr >= 0) {
+		// left
+		var bc = block_col-1;
+		if(bc >= 0) adjacents.push($("#b_"+tr+"_"+bc));
+		// right
+		var bc = block_col+1;
+		if(bc < board_size) adjacents.push($("#b_"+tr+"_"+bc));
+	}
+	
+	// bottom
+	var tr = block_row+1;
+	if(tr < board_size) {
+		// left
+		var bc = block_col-1;
+		if(bc >= 0) adjacents.push($("#b_"+tr+"_"+bc));
+		// right
+		var bc = block_col+1;
+		if(bc < board_size) adjacents.push($("#b_"+tr+"_"+bc));
+	}
+	
+	return adjacents;
+}
+
+
+function resetGame() 
+{
+	$(".board *").remove();
+	$(".cage *").remove();
+	
+	var col = -1;
+	var row = 0;
+	var odd = false;
+	
+	// reset moves
+	moves_red = 0;
+	moves_blue = 0;
+	
+	// board
+	for (var i=0; i < board_size*board_size; i++) {
+		col++; if(col == board_size) { col=0; row++; }
+		
+		var b = $('<div class="block" id="b_'+row+'_'+col+'"></div>').addClass(odd?"odd":"");
+		b.appendTo(".board");
+		if(col!=board_size-1) odd = !odd;	//checkboard
+	}
+	$(".board").width(board_size*50).height(board_size*50)
+	
+	// Add peices 
+	// red (top)
+	for (var i=0; i < board_size; i++) {
+		var p = $('<div class="piece red"></div>');
+		p.appendTo($("#b_0_"+i));
+	}
+	
+	// blue (bottom)
+	for (var i=0; i < board_size; i++) {
+		var p = $('<div class="piece blue"></div>');
+		p.appendTo($("#b_"+(board_size-1)+"_"+i));
+	}
+	
+	// add coins to board
+	var coin_row = board_size/2;
+	for (var i=0; i < board_size; i++) {
+		var p = $('<div class="coin"></div>');
+		coin_row = (coin_row==board_size/2)?board_size/2-1:board_size/2;
+		p.appendTo($("#b_"+(coin_row)+"_"+i));
+	}
+	
+	$( ".block" ).droppable({
+	      drop: function( event, ui ) {
+			if(getIfDropTargetIsValid( $(ui.draggable), $(this) )) {
+				$(ui.draggable).appendTo(this);
+				startAudioMove();
+				update();
+			}
+	      }
+	    });
+	
+	switchTurn();
+	
+	startAudioStart();
+}
+
+function getIfDropTargetIsValid(piece, droppable) 
+{
+	// check if it's a block
+	if(!$(droppable).hasClass("block")) return false;
+	// check if it's empty
+	if($(droppable).has(".piece").length) return false;
+	if($(droppable).has(".coin").length) return false;
+	
+	var piece_parent_id = $(piece).parent().attr("id");
+	var piece_row = parseInt(piece_parent_id.split("_")[1]);
+	var piece_col = parseInt(piece_parent_id.split("_")[2]);
+	
+	var droppable_row = parseInt($(droppable).attr("id").split("_")[1]);
+	var droppable_col = parseInt($(droppable).attr("id").split("_")[2]);
+	
+	//console.log(droppable_row+"   "+piece_row+" --- "+droppable_col+"  "+piece_col);
+	
+	// Allow dropping on top, bottom or sides
+	if(droppable_row==piece_row && droppable_col==piece_col-1) return true;
+	if(droppable_row==piece_row && droppable_col==piece_col+1) return true;
+	if(droppable_row==piece_row+1 && droppable_col==piece_col) return true;
+	if(droppable_row==piece_row-1 && droppable_col==piece_col) return true;
+	
+	return false;
+}
+
+function getLastRowBlocks(player_color) 
+{
+	var blocks = [];
+	var rowc = player_color=="red"?board_size-1:0;
+	for (var i=0; i < board_size; i++) {
+		blocks.push($("#b_"+rowc+"_"+i));
+	}
+	return blocks;
+}
+
+function isBlockEmpty(block) 
+{
+	return (!$(block).has(".piece").length && !$(block).has(".coin").length);
+}
+
+$(function() {
+	
+	initAllAudio();
+
+	resetGame();
+	
+	$(".reload").click(function() {
+		if(confirm("Restart game?")) resetGame();
+	});
+	
+});
+
+
+
+////// AUDIO Stuff //////
+
+// A hack to make audio work on Safari Mobile, adapted from: 
+// https://stackoverflow.com/questions/10951524/play-and-replay-a-sound-on-safari-mobile
+
+function initAllAudio() 
+{
+	initAudioStart();
+	initAudioMove();
+	initAudioCapture();
+	initAudioCoin();
+	initAudioWin();
+	initAudioFreeze();
+}
+
+function initAudioMove() {
+    var audioMove = new Audio('assets/sounds/move.mp3');
+    
+    self.audioMove = audioMove;
+    var startAudioMove = function(){
+        self.audioMove.play();
+        document.removeEventListener("touchstart", self.startAudioMove, false);
+    }
+    self.startAudioMove = startAudioMove;
+
+    var pauseAudioMove = function(){
+        self.audioMove.pause();
+        self.audioMove.removeEventListener("play", self.pauseAudioMove, false);
+    }
+    self.pauseAudioMove = pauseAudioMove;
+    document.addEventListener("touchstart", self.startAudioMove, false);
+    self.audioMove.addEventListener("play", self.pauseAudioMove, false);
+}
+function initAudioFreeze() {
+    var audioFreeze = new Audio('assets/sounds/freeze.mp3');
+    
+    self.audioFreeze = audioFreeze;
+    var startAudioFreeze = function(){
+        self.audioFreeze.play();
+        document.removeEventListener("touchstart", self.startAudioFreeze, false);
+    }
+    self.startAudioFreeze = startAudioFreeze;
+
+    var pauseAudioFreeze = function(){
+        self.audioFreeze.pause();
+        self.audioFreeze.removeEventListener("play", self.pauseAudioFreeze, false);
+    }
+    self.pauseAudioFreeze = pauseAudioFreeze;
+    document.addEventListener("touchstart", self.startAudioFreeze, false);
+    self.audioFreeze.addEventListener("play", self.pauseAudioFreeze, false);
+}
+function initAudioCoin() {
+    var audioCoin = new Audio('assets/sounds/coin.mp3');
+    
+    self.audioCoin = audioCoin;
+    var startAudioCoin = function(){
+        self.audioCoin.play();
+        document.removeEventListener("touchstart", self.startAudioCoin, false);
+    }
+    self.startAudioCoin = startAudioCoin;
+
+    var pauseAudioCoin = function(){
+        self.audioCoin.pause();
+        self.audioCoin.removeEventListener("play", self.pauseAudioCoin, false);
+    }
+    self.pauseAudioCoin = pauseAudioCoin;
+    document.addEventListener("touchstart", self.startAudioCoin, false);
+    self.audioCoin.addEventListener("play", self.pauseAudioCoin, false);
+}
+function initAudioWin() {
+    var audioWin = new Audio('assets/sounds/win.mp3');
+    
+    self.audioWin = audioWin;
+    var startAudioWin = function(){
+        self.audioWin.play();
+        document.removeEventListener("touchstart", self.startAudioWin, false);
+    }
+    self.startAudioWin = startAudioWin;
+
+    var pauseAudioWin = function(){
+        self.audioWin.pause();
+        self.audioWin.removeEventListener("play", self.pauseAudioWin, false);
+    }
+    self.pauseAudioWin = pauseAudioWin;
+    document.addEventListener("touchstart", self.startAudioWin, false);
+    self.audioWin.addEventListener("play", self.pauseAudioWin, false);
+}
+function initAudioCapture() {
+    var audioCapture = new Audio('assets/sounds/capture.mp3');
+    
+    self.audioCapture = audioCapture;
+    var startAudioCapture = function(){
+        self.audioCapture.play();
+        document.removeEventListener("touchstart", self.startAudioCapture, false);
+    }
+    self.startAudioCapture = startAudioCapture;
+
+    var pauseAudioCapture = function(){
+        self.audioCapture.pause();
+        self.audioCapture.removeEventListener("play", self.pauseAudioCapture, false);
+    }
+    self.pauseAudioCapture = pauseAudioCapture;
+    document.addEventListener("touchstart", self.startAudioCapture, false);
+    self.audioCapture.addEventListener("play", self.pauseAudioCapture, false);
+}
+function initAudioStart() {
+    var audioStart = new Audio('assets/sounds/start.mp3');
+    self.audioStart = audioStart;
+    var startAudioStart = function(){
+        self.audioStart.play();
+        document.removeEventListener("touchstart", self.startAudioStart, false);
+    }
+    self.startAudioStart = startAudioStart;
+
+    var pauseAudioStart = function(){
+        self.audioStart.pause();
+        self.audioStart.removeEventListener("play", self.pauseAudioStart, false);
+    }
+    self.pauseAudioStart = pauseAudioStart;
+    document.addEventListener("touchstart", self.startAudioStart, false);
+    self.audioStart.addEventListener("play", self.pauseAudioStart, false);
+}
+
+////////////////////////////////////////
+////// AI //////////////////////////////
+// Assuming AI is playing RED
+
+/* How AI plays (by priority)
+
+1- capture blue
+2- freeze piece close to end row
+3- defend any vulnerable red
+4- capture coin
+5- move forward
+7- move randomnly
+
+*/
+var AI = {
+	playTurn: function () {
+		var played = false;
+		
+		//if(!played) played = this.playRandom();
+		
+		new Analyzer().performBestMove();
+		
+		window.setTimeout(update, 200);
+	},
+	
+	playCaptureBlue: function () {
+		console.log("Trying playCaptureBlue");
+		
+		// Get all the blue that has adjacent reds
+		var blues = $(".piece.blue");
+		var vulnerable_blues = [];
+		var red_piece = false;
+		for (var i=0; i < blues.length; i++) {
+			var adjacents = getAdjacentBlocks($(blues[i]).parent());
+			var has_red = false;
+			for (var j=0; j < adjacents.length; j++) {
+				if($(adjacents[j]).has(".piece.red").length) { 
+					has_red=true;
+					break;
+				}
+			}
+			if(has_red) {
+				// look for other nearby red pieces that can move in single step to one of the adjacent blocks
+				var diagonals = getDiaginalBlocks($(blues[i]).parent());
+				for (var j=0; j < diagonals.length; j++) {
+					if($(diagonals[j]).has(".red").length) {
+						red_piece = $(".piece.red", $(diagonals[j]) );
+						break;
+					}
+				}
+				if(red_piece) {
+					// find the nearest common empty block between the red and blue
+					var red_adjacents = getAdjacentBlocks($(red_piece).parent());
+					var common_adjacents = $.arrayIntersect(red_adjacents, adjacents);
+					for (var k=0; k < common_adjacents.length; k++) {
+						if(isBlockEmpty(common_adjacents[k])) {
+							// FOUND IT! ATTACK!
+							this.movePiece(red_piece, common_adjacents[k]);
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	},
+	playFreeze: function () {
+		console.log("Trying playFreeze");
+		var last_blocks = getLastRowBlocks("red");
+		var empty_last_blocks = [];
+		$.each(last_blocks, function(i, b) { if(isBlockEmpty(b)) empty_last_blocks.push(b) });
+		
+		// get all reds in row before last
+		var reds = [];
+		var before_last_row = board_size-2;
+		for(var i=0; i<board_size; i++) {
+			var b = $(".piece.red", "#b_"+before_last_row+"_"+i);
+			if(b.length) reds.push(b);
+		}
+		for (var i=0; i < reds.length; i++) {
+			var adjacents = getAdjacentBlocks($(reds[i]).parent());
+			var adjacents_in_last_row = $.arrayIntersect(adjacents, empty_last_blocks);
+			if(adjacents_in_last_row.length) {
+				this.movePiece($(reds[i]), adjacents_in_last_row[0]);
+				return true;
+			}
+		};
+		
+		return false;
+	},
+	playDefend: function () {
+		console.log("Trying playDefend");
+		return false;
+	},
+	playCoin: function () {
+		console.log("Trying playCoin");
+		return false;
+	},
+	playMoveForward: function () {
+		console.log("Trying playMoveToTarget");
+		// move forward as long as there's no danger 
+		
+		
+		return false;
+	},
+	
+	playRandom: function()
+	{
+		console.log("Trying random");
+		var reds = $(".piece.red");
+		shuffle(reds);
+		var p = reds[0];
+		var blocks = getAdjacentBlocks($(p).parent());
+		var free = [];
+		$.each(blocks, function(i,e) {
+			if(!$(e).has(".piece").length && !$(e).has(".coin").length) free.push(e);
+		});
+		shuffle(free);
+		this.movePiece(p, free[0]);
+		return true;
+	},
+	
+	
+	movePiece: function(piece, to_block)
+	{
+		$(to_block).append($(piece));
+		startAudioMove();
+	}
+}
+
+/************************************************************/
+
+
+// Helpers
+function shuffle(a) {
+    var j, x, i;
+    for (i = a.length; i; i--) {
+        j = Math.floor(Math.random() * i);
+        x = a[i - 1];
+        a[i - 1] = a[j];
+        a[j] = x;
+    }
+}
+
+$.arrayIntersect = function(a, b)
+{
+	var matches = [];
+    $.each(a, function(i,ea) {
+		$.each(b, function(j, eb) {
+			if($(ea).attr("id") == $(eb).attr("id")) matches.push(a[i]);
+		});
+	});
+	return matches;
+};
+
+

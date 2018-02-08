@@ -3,7 +3,7 @@ var moves_red = 0;
 var moves_blue = 0;
 var self = this;
 
-var against_AI = true;
+var against_AI = false;
 
 // Start with a random turn
 var current_turn = Math.random()>.5?"red":"blue";
@@ -336,12 +336,39 @@ $(function() {
 
 	resetGame();
 	
-	$(".reload").click(function() {
-		if(confirm("Restart game?")) resetGame();
-	});
-	
+	initInteractions();
 });
 
+function initInteractions() 
+{
+	$(".reload").click(function() {
+		if(confirm("Restart game?")) showPopup("#newgame");
+	});
+	
+	$("#newgame_1player").click(function() {
+		against_AI = true;
+		resetGame();
+		hidePopup();
+	});
+	$("#newgame_2players").click(function() {
+		against_AI = false;
+		resetGame();
+		hidePopup();
+	});
+}
+
+function hidePopup() 
+{
+	$(".popup").fadeOut();
+	$(".dim").fadeOut();
+}
+function showPopup(content_id) 
+{
+	$(".popup .popupcontent").hide();
+	$(content_id).show();
+	$(".popup").fadeIn();
+	$(".dim").fadeIn(500);
+}
 
 
 ////// AUDIO Stuff //////

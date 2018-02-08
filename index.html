@@ -3,19 +3,21 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 
 <style>
-	html, body {padding:0; margin:0; background:#000;}
-	.board { width:400px; border:20px solid #ccc; height:400px; margin:0 auto;}
-	.board.red { border-color:#D40E32; }
-	.board.blue { border-color:#1546BD; }
+	html, body {padding:0; margin:0; background:#fff;}
+	.board { border-radius:16px; padding:4px; width:400px; border:24px solid #FBF8F4; height:400px; margin:0px auto;}
+	.turnstrip { display:block; width:240px; border-radius:20px; height:16px; margin:8px auto; opacity:0; }
+	.turnstrip.red { background-color:#FF6867; }
+	.turnstrip.blue { background-color:#01C4D0; }
 	.board.off { border-color:black; }
-	.block { width:50px; height:50px;  background:#eee; float:left; position:relative }
-	.block.odd {background:#E4E4E4;}
-	.block.active { background:yellow; }
+	.block { border-radius:6px; width:48px; height:48px;  background:#F6F1E8; float:left; position:relative; 
+		border:1px solid #fff; }
+	.block.odd {background:#fff;}
+	.block.active { background:#FBDCA7; }
 	.piece { width:48px; height:48px; background:#ccc; border-radius:30px; background-size:cover !important; }
 	.captured { width:20px; height:20px; border-radius:30px; float:left; background-size:cover !important; }
 	.cage { overflow:auto; margin:10px auto; width:440px; }
-	.red { background:url(images/red.png); }
-	.blue { background:url(images/blue.png); }
+	.piece.red { background:url(images/red.png); }
+	.piece.blue { background:url(images/blue.png); }
 	.blue-fixed { background:url(images/blue-fixed.png); } 
 	.red-fixed { background:url(images/red-fixed.png); } 
 	.coin { width:48px; height:48px; background:url(images/coin.png); border-radius:30px;  background-size:cover }
@@ -25,8 +27,10 @@
 </style>
 
 
-<div class="board">
-</div>
+<div class="turnstrip red"></div>
+<div class="board"></div>
+<div class="turnstrip blue"></div>
+
 
 <div class="cage">
 </div>
@@ -58,6 +62,9 @@ function switchTurn()
 	
 	$(".board").removeClass("blue").removeClass("red")
 	$(".board").addClass(current_turn);
+
+	$(".turnstrip").css({"opacity":0});	
+	$(".turnstrip."+current_turn).css({"opacity":1});
 	
 	$(".piece").draggable();
 	$(".piece").draggable("destroy");

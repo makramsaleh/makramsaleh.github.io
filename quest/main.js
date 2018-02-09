@@ -1,10 +1,12 @@
-var board_size = 8;
+var board_size = 6;
 var moves_red = 0;
 var moves_blue = 0;
 var self = this;
 
 var sound_enabled = true;
 var against_AI = false;
+
+var anim_speed = 200;
 
 // Start with a random turn
 var current_turn = Math.random()>.5?"red":"blue";
@@ -26,9 +28,6 @@ function switchTurn()
 {
 	current_turn = current_turn=="blue"?"red":"blue";
 	
-	$(".board").removeClass("blue").removeClass("red")
-	$(".board").addClass(current_turn);
-
 	$(".turnstrip").css({"opacity":0});	
 	$(".turnstrip."+current_turn).css({"opacity":1});
 	
@@ -54,6 +53,17 @@ function switchTurn()
 	if(current_turn == "red" && against_AI) AI.playTurn();
 }
 
+function replaceCoin(coin, piece_color) 
+{
+	var p = $('<div class="piece '+piece_color+'"></div>');
+	p.appendTo($(coin).parent());
+	
+	$(coin).toggle("drop", function() {$(this).remove()});
+	$(p).hide().toggle("drop", {direction:"right"});
+	
+	startAudioCoin();
+}
+
 function update() 
 {
 	if(current_turn == "red") moves_red++;
@@ -70,12 +80,10 @@ function update()
 			if($(e).find(".piece.blue").length) blue_adjacent++;
 		});
 		if(red_adjacent>=2) { 
-			$(this).addClass("piece").addClass("red").removeClass("coin");
-			startAudioCoin();
+			replaceCoin(this, "red");
 		}
 		if(blue_adjacent>=2) {
-			$(this).addClass("piece").addClass("blue").removeClass("coin");
-			startAudioCoin();
+			replaceCoin(this, "blue");
 		}
 	});
 	

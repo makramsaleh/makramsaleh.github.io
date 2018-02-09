@@ -9,14 +9,14 @@ html, body {padding:0; margin:0; background:#fff; overflow:hidden;}
 	border:1px solid #fff; }
 .block.odd {background:#fff;}
 .block.active { background:#FBDCA7; }
-.piece { width:48px; height:48px; background:#ccc; border-radius:30px; background-size:cover !important; }
-.captured { width:20px; height:20px; border-radius:30px; float:left; background-size:cover !important; }
-.cage { overflow:auto; margin:10px auto; width:440px; }
+.piece, .coin { z-index:1000; position:absolute; top:0px; left:0px; width:48px; height:48px; background:#ccc; border-radius:30px; background-size:cover !important; }
+.captured { width:20px; height:20px; border-radius:30px; display:inline-block; background-size:cover !important; }
+.cage { overflow:hidden; height:20px; margin:10px auto; width:440px; text-align:center; }
 .piece.red, .captured.red { background:url(../images/red.png); }
 .piece.blue, .captured.blue { background:url(../images/blue.png); }
 .blue-fixed { background:url(../images/blue-fixed.png); } 
 .red-fixed { background:url(../images/red-fixed.png); } 
-.coin { width:48px; height:48px; background:url(../images/coin.png); border-radius:30px;  background-size:cover }
+.coin { z-index:900; width:48px; height:48px; background:url(../images/coin.png); border-radius:30px;  background-size:cover }
 .reload { font-family: Lucida Sans Unicode; font-size:30px;
 	cursor:pointer; background:#eee; position:relative; 
 	width:40px; text-align:center; border-radius:10px; margin:0 auto; }

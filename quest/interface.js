@@ -24,7 +24,6 @@ function initInteractions()
 		sound_enabled = !sound_enabled;
 		updateVolumeIcon();
 		Cookies.set("sound", sound_enabled?"yes":"no");
-		console.log(Cookies.get("sound"));
 	});
 }
 

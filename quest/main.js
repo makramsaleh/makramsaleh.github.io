@@ -8,6 +8,19 @@ var against_AI = false;
 // Start with a random turn
 var current_turn = Math.random()>.5?"red":"blue";
 
+
+$(function() {
+	
+	initAllAudio();
+
+	resetGame();
+	
+	initInteractions();
+	
+	showPopup("#popup_newgame");
+});
+
+
 function switchTurn() 
 {
 	current_turn = current_turn=="blue"?"red":"blue";
@@ -93,12 +106,12 @@ function update()
 	var winner = checkGameOver();
 	if(winner == "tie") {
 		$(".board").removeClass("blue").removeClass("red").addClass("off");
-		alert("IT'S A TIE!");
+		showWinnerPopup("IT'S A TIE!");
 		startAudioWin();
 		return;
 	} else if(winner.length) {
 		$(".board").removeClass("blue").removeClass("red").addClass(winner);
-		alert((winner+" won!").toUpperCase());
+		showWinnerPopup(winner+" wins!");
 		startAudioWin();
 		return;
 	}
@@ -328,46 +341,6 @@ function getLastRowBlocks(player_color)
 function isBlockEmpty(block) 
 {
 	return (!$(block).has(".piece").length && !$(block).has(".coin").length);
-}
-
-$(function() {
-	
-	initAllAudio();
-
-	resetGame();
-	
-	initInteractions();
-});
-
-function initInteractions() 
-{
-	$(".reload").click(function() {
-		if(confirm("Restart game?")) showPopup("#newgame");
-	});
-	
-	$("#newgame_1player").click(function() {
-		against_AI = true;
-		resetGame();
-		hidePopup();
-	});
-	$("#newgame_2players").click(function() {
-		against_AI = false;
-		resetGame();
-		hidePopup();
-	});
-}
-
-function hidePopup() 
-{
-	$(".popup").fadeOut();
-	$(".dim").fadeOut();
-}
-function showPopup(content_id) 
-{
-	$(".popup .popupcontent").hide();
-	$(content_id).show();
-	$(".popup").fadeIn();
-	$(".dim").fadeIn(500);
 }
 
 

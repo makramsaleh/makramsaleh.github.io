@@ -17,14 +17,26 @@
 <div class="dim"></div>
 <div class="popupcontainer">
 	<div class="popup">
-		<div class="popupcontent" id="newgame">
+		
+		<!-- New game -->
+		<div class="popupcontent" id="popup_newgame">
 			<h1>New Game</h1>
 			<br class="clear" />
 			<div class="buttons">
 				<a href="javascript:;" id="newgame_1player">1 player</a>
 				<a href="javascript:;" id="newgame_2players" class="red">2 players</a>
 			</div>
-		</div>			
+		</div>
+
+		<!-- Winner -->
+		<div class="popupcontent" id="popup_winner">
+			<h1>Game Over</h1>
+			<br class="clear" />
+			<div class="buttons">
+				<a href="javascript:;" id="btn_playagain">Play Again</a>
+			</div>
+		</div>
+		
 	</div>
 </div>
 
@@ -48,6 +60,7 @@
 <script src="quest/Analyzer.js" type="text/javascript"></script>
 <script src="quest/VirtualBoard.js" type="text/javascript"></script>
 
+<script src="quest/interface.js" type="text/javascript"></script>
 <script src="quest/main.js" type="text/javascript"></script>
 
 </body>

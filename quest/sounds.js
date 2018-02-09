@@ -11,6 +11,13 @@ function initAllAudio()
 	initAudioCoin();
 	initAudioWin();
 	initAudioFreeze();
+	
+	if(typeof Cookies.get('sound') != "undefined") {
+		if(Cookies.get('sound') == "no") {
+		    sound_enabled = false;
+			updateVolumeIcon();
+		}		
+	}
 }
 
 function initAudioMove() {

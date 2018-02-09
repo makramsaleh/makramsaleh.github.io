@@ -23,6 +23,8 @@ function initInteractions()
 	$("#btn_toggle_sound").click(function() {
 		sound_enabled = !sound_enabled;
 		updateVolumeIcon();
+		Cookies.set("sound", sound_enabled?"yes":"no");
+		console.log(Cookies.get("sound"));
 	});
 }
 

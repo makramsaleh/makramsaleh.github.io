@@ -21,18 +21,18 @@ html, body {padding:0; margin:0; background:#fff; overflow:hidden;}
 	cursor:pointer; background:#eee; position:relative; 
 	width:40px; text-align:center; border-radius:10px; margin:0 auto; }
 
+
 .dim { background:#FFDB4A; opacity:.9; position:absolute; width:100%; height:100%; z-index:4000; }
 .popupcontainer { position:absolute; left:50%; }
-.popup { display:none; left:-170px; top:100px; width:340px; background:#FFFBEF; position:absolute; z-index:4100;  
-    box-shadow: 0px 8px 0px #CEAB39CC;
-    border-radius:24px;
-}
+.popup { display:none; left:-170px; top:100px; width:340px; background:#FFFBEF; position:absolute; z-index:4100; box-shadow: 0px 8px 0px #CEAB39CC; border-radius:24px; }
+.popupcontent { padding:40px 20px; text-align:center; }
+.popupcontent h1 { font-size:30px; font-weight:normal;  color:#FF6867; margin:0 0 20px 0; }
+
 .buttons {text-align: center; }
 .buttons a { position:relative; margin:5px; margin-bottom:0px; font-size:14px; padding:16px 12px 12px 12px; border-radius:8px; color:#fff; text-decoration:none;
     background:#01C4D0; box-shadow: 0px 4px 0px #3C7E82CC; }
+.buttons a i { position:relative; top:6px; }
 .buttons a:active { top:4px; box-shadow: 0px 0px 0px #000 !important; }
 .buttons a.red { background:#FF6867; box-shadow: 0px 4px 0px #9F4645CC; }
 
-.popupcontent { padding:40px 20px; text-align:center; }
-.popupcontent h1 { font-size:30px; font-weight:normal;  color:#FF6867; margin:0 0 20px 0; }
 .clear { clear: both; }

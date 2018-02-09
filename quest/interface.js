@@ -1,7 +1,7 @@
 function initInteractions() 
 {
-	$(".reload").click(function() {
-		if(confirm("Restart game?")) showPopup("#popup_newgame");
+	$("#btn_pause").click(function() {
+		showPopup("#popup_pause");
 	});
 	
 	$("#newgame_1player").click(function() {
@@ -16,6 +16,8 @@ function initInteractions()
 	});
 	
 	$("#btn_playagain").click(function() { showPopup("#popup_newgame"); });
+	$("#btn_replay").click(function() { showPopup("#popup_newgame"); });
+	$("#btn_continue").click(function() { hidePopup(); });
 }
 
 function showWinnerPopup(message) 

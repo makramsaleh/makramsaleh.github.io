@@ -185,7 +185,9 @@ function checkTrapped(color)
 			if($(e).find(".piece."+(color=="blue"?"red":"blue")).length) opponent_adjacent++;
 		});
 		if(opponent_adjacent>=2) { 
-			$(this).removeClass("piece").addClass("captured").appendTo(".cage");
+			var captured = $(this).clone()
+			$(captured).removeClass("piece").addClass("captured").appendTo(".cage").hide().toggle("drop", {direction:"right"});
+			$(this).toggle("drop", function() {$(this).remove()});
 			startAudioCapture();
 		}
 	});

@@ -18,6 +18,12 @@ function initInteractions()
 	$("#btn_playagain").click(function() { showPopup("#popup_newgame"); });
 	$("#btn_replay").click(function() { showPopup("#popup_newgame"); });
 	$("#btn_continue").click(function() { hidePopup(); });
+	
+	// Sound toggle
+	$("#btn_toggle_sound").click(function() {
+		sound_enabled = !sound_enabled;
+		updateVolumeIcon();
+	});
 }
 
 function showWinnerPopup(message) 
@@ -37,4 +43,13 @@ function showPopup(content_id)
 	$(content_id).show();
 	$(".popup").fadeIn();
 	$(".dim").fadeIn(500);
+}
+
+function updateVolumeIcon() 
+{
+	if(sound_enabled) {
+		$("#btn_toggle_sound i").text("volume_up");
+	} else {
+		$("#btn_toggle_sound i").text("volume_off");
+	}
 }

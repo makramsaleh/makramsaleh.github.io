@@ -148,8 +148,38 @@ VirtualBoard.prototype.applyToHTMLBoard = function() {
 				break;
 			}
 			
+			
+			// Replace old piece with new piece with animation
+			if(block.children().length > 0) {
+				var existing_piece = $(block).children().first();
+				
+				// Coins
+				if( $(existing_piece).hasClass("coin") && piece_class.indexOf("piece")!=-1) {
+					var next_color = piece_class.split(" ")[1];
+					replaceCoin(existing_piece, next_color);
+				} else {
+					block.empty();
+					if(piece_class != "") {
+						$('<div class="'+piece_class+' auto"></div>').prependTo(block);
+					}
+				}
+				
+				if(piece_class.indexOf("piece")!=-1 && piece_class=="") {
+					replaceCaptured(existing_piece);
+				}
+				
+			} else {
+				if(piece_class != "") {
+					$('<div class="'+piece_class+' auto"></div>').prependTo(block);
+				}
+			}
+			
+			/*
 			block.empty();
-			if(piece_class != "") $('<div class="'+piece_class+'"></div>').appendTo(block);
+			if(piece_class != "") {
+				$('<div class="'+piece_class+' auto"></div>').appendTo(block);
+			}*/
+			
 		}
 	}
 	
@@ -267,6 +297,7 @@ VirtualBoard.prototype.updateAfterMove = function(turn)
 	this.last_move_score -= this.getPiecesInDanger(1);
 	this.last_move_score += this.getPiecesInDanger(2);
 	
+	// TODO
 	/*
 	var winner = checkGameOver();
 	if(winner == "tie") {

@@ -1,4 +1,4 @@
-var board_size = 8;
+var board_size = 6;
 var moves_red = 0;
 var moves_blue = 0;
 var self = this;
@@ -56,7 +56,7 @@ function switchTurn()
 function replaceCoin(coin, piece_color) 
 {
 	var p = $('<div class="piece '+piece_color+'"></div>');
-	p.appendTo($(coin).parent());
+	p.prependTo($(coin).parent());
 	
 	$(coin).toggle("drop", function() {$(this).remove()});
 	$(p).hide().toggle("drop", {direction:"right"});
@@ -64,52 +64,63 @@ function replaceCoin(coin, piece_color)
 	startAudioCoin();
 }
 
-function update() 
+function replaceCaptured(piece) 
 {
+	var captured = $(piece).clone()
+	$(captured).removeClass("piece").addClass("captured").appendTo(".cage").hide().toggle("drop", {direction:"right"});
+	$(piece).toggle("drop", function() {$(this).remove()});
+	startAudioCapture();
+}
+
+function update() 
+{	
 	if(current_turn == "red") moves_red++;
 	if(current_turn == "blue") moves_blue++;
 	
-	// rule: coins switch to either blue or red piece if surrounded by that color from 2 adjacent sides
-	// check if any coin is adjacent to red or blue piece
-	$(".coin").each(function() {
-		var ad = getAdjacentBlocks($(this).parent());
-		var blue_adjacent = 0;
-		var red_adjacent = 0;
-		$.each(ad, function(j,e) { 
-			if($(e).find(".piece.red").length) red_adjacent++;
-			if($(e).find(".piece.blue").length) blue_adjacent++;
+	if(current_turn=="blue" || (current_turn=="red" && !against_AI)) {
+				
+		// rule: coins switch to either blue or red piece if surrounded by that color from 2 adjacent sides
+		// check if any coin is adjacent to red or blue piece
+		$(".coin").each(function() {
+			var ad = getAdjacentBlocks($(this).parent());
+			var blue_adjacent = 0;
+			var red_adjacent = 0;
+			$.each(ad, function(j,e) { 
+				if($(e).find(".piece.red").length) red_adjacent++;
+				if($(e).find(".piece.blue").length) blue_adjacent++;
+			});
+			if(red_adjacent>=2) { 
+				replaceCoin(this, "red");
+			}
+			if(blue_adjacent>=2) {
+				replaceCoin(this, "blue");
+			}
 		});
-		if(red_adjacent>=2) { 
-			replaceCoin(this, "red");
+	
+		// rule: any piece surrounded by 2 opponent pieces on sides gets "captured"
+		// rule: captured pieces are removed from board
+		if(current_turn == "red") {
+			checkTrapped("blue");
+			checkTrapped("red");
+		} else {
+			checkTrapped("red");
+			checkTrapped("blue");
 		}
-		if(blue_adjacent>=2) {
-			replaceCoin(this, "blue");
+	
+		// rule: pieces that reach the opposite end row will be frozen (can't be moved anymore) and count towards the player score
+		// 
+		// rule: if all pieces of any player are captured and/or reached end row the game is over 
+		// rule: player with most pieces on the board wins
+	
+		// Freeze pieces that arrived at the last row
+		for (var i=0; i < board_size; i++) {
+			if($('#b_0_'+i+" .blue").length) startAudioFreeze();
+			$('#b_0_'+i+" .blue").addClass("blue-fixed").removeClass("blue");
 		}
-	});
-	
-	// rule: any piece surrounded by 2 opponent pieces on sides gets "captured"
-	// rule: captured pieces are removed from board
-	if(current_turn == "red") {
-		checkTrapped("blue");
-		checkTrapped("red");
-	} else {
-		checkTrapped("red");
-		checkTrapped("blue");
-	}
-	
-	// rule: pieces that reach the opposite end row will be frozen (can't be moved anymore) and count towards the player score
-	// 
-	// rule: if all pieces of any player are captured and/or reached end row the game is over 
-	// rule: player with most pieces on the board wins
-	
-	// Freeze pieces that arrived at the last row
-	for (var i=0; i < board_size; i++) {
-		if($('#b_0_'+i+" .blue").length) startAudioFreeze();
-		$('#b_0_'+i+" .blue").addClass("blue-fixed").removeClass("blue");
-	}
-	for (var i=0; i < board_size; i++) {
-		if($('#b_'+(board_size-1)+'_'+i+" .red").length) startAudioFreeze();
-		$('#b_'+(board_size-1)+'_'+i+" .red").addClass("red-fixed").removeClass("red");
+		for (var i=0; i < board_size; i++) {
+			if($('#b_'+(board_size-1)+'_'+i+" .red").length) startAudioFreeze();
+			$('#b_'+(board_size-1)+'_'+i+" .red").addClass("red-fixed").removeClass("red");
+		}
 	}
 	
 	var winner = checkGameOver();
@@ -185,10 +196,7 @@ function checkTrapped(color)
 			if($(e).find(".piece."+(color=="blue"?"red":"blue")).length) opponent_adjacent++;
 		});
 		if(opponent_adjacent>=2) { 
-			var captured = $(this).clone()
-			$(captured).removeClass("piece").addClass("captured").appendTo(".cage").hide().toggle("drop", {direction:"right"});
-			$(this).toggle("drop", function() {$(this).remove()});
-			startAudioCapture();
+			replaceCaptured(this);			
 		}
 	});
 }
@@ -301,7 +309,7 @@ function resetGame()
 	$( ".block" ).droppable({
 	      drop: function( event, ui ) {
 			if(getIfDropTargetIsValid( $(ui.draggable), $(this) )) {
-				$(ui.draggable).appendTo(this);
+				$(ui.draggable).prependTo(this);
 				startAudioMove();
 				update();
 			}
@@ -353,139 +361,6 @@ function isBlockEmpty(block)
 {
 	return (!$(block).has(".piece").length && !$(block).has(".coin").length);
 }
-
-
-////////////////////////////////////////
-////// AI //////////////////////////////
-// Assuming AI is playing RED
-
-/* How AI plays (by priority)
-
-1- capture blue
-2- freeze piece close to end row
-3- defend any vulnerable red
-4- capture coin
-5- move forward
-7- move randomnly
-
-*/
-var AI = {
-	playTurn: function () {
-		var played = false;
-		
-		//if(!played) played = this.playRandom();
-		
-		new Analyzer().performBestMove();
-		
-		window.setTimeout(update, 200);
-	},
-	
-	playCaptureBlue: function () {
-		console.log("Trying playCaptureBlue");
-		
-		// Get all the blue that has adjacent reds
-		var blues = $(".piece.blue");
-		var vulnerable_blues = [];
-		var red_piece = false;
-		for (var i=0; i < blues.length; i++) {
-			var adjacents = getAdjacentBlocks($(blues[i]).parent());
-			var has_red = false;
-			for (var j=0; j < adjacents.length; j++) {
-				if($(adjacents[j]).has(".piece.red").length) { 
-					has_red=true;
-					break;
-				}
-			}
-			if(has_red) {
-				// look for other nearby red pieces that can move in single step to one of the adjacent blocks
-				var diagonals = getDiaginalBlocks($(blues[i]).parent());
-				for (var j=0; j < diagonals.length; j++) {
-					if($(diagonals[j]).has(".red").length) {
-						red_piece = $(".piece.red", $(diagonals[j]) );
-						break;
-					}
-				}
-				if(red_piece) {
-					// find the nearest common empty block between the red and blue
-					var red_adjacents = getAdjacentBlocks($(red_piece).parent());
-					var common_adjacents = $.arrayIntersect(red_adjacents, adjacents);
-					for (var k=0; k < common_adjacents.length; k++) {
-						if(isBlockEmpty(common_adjacents[k])) {
-							// FOUND IT! ATTACK!
-							this.movePiece(red_piece, common_adjacents[k]);
-							return true;
-						}
-					}
-				}
-			}
-		}
-		return false;
-	},
-	playFreeze: function () {
-		console.log("Trying playFreeze");
-		var last_blocks = getLastRowBlocks("red");
-		var empty_last_blocks = [];
-		$.each(last_blocks, function(i, b) { if(isBlockEmpty(b)) empty_last_blocks.push(b) });
-		
-		// get all reds in row before last
-		var reds = [];
-		var before_last_row = board_size-2;
-		for(var i=0; i<board_size; i++) {
-			var b = $(".piece.red", "#b_"+before_last_row+"_"+i);
-			if(b.length) reds.push(b);
-		}
-		for (var i=0; i < reds.length; i++) {
-			var adjacents = getAdjacentBlocks($(reds[i]).parent());
-			var adjacents_in_last_row = $.arrayIntersect(adjacents, empty_last_blocks);
-			if(adjacents_in_last_row.length) {
-				this.movePiece($(reds[i]), adjacents_in_last_row[0]);
-				return true;
-			}
-		};
-		
-		return false;
-	},
-	playDefend: function () {
-		console.log("Trying playDefend");
-		return false;
-	},
-	playCoin: function () {
-		console.log("Trying playCoin");
-		return false;
-	},
-	playMoveForward: function () {
-		console.log("Trying playMoveToTarget");
-		// move forward as long as there's no danger 
-		
-		
-		return false;
-	},
-	
-	playRandom: function()
-	{
-		console.log("Trying random");
-		var reds = $(".piece.red");
-		shuffle(reds);
-		var p = reds[0];
-		var blocks = getAdjacentBlocks($(p).parent());
-		var free = [];
-		$.each(blocks, function(i,e) {
-			if(!$(e).has(".piece").length && !$(e).has(".coin").length) free.push(e);
-		});
-		shuffle(free);
-		this.movePiece(p, free[0]);
-		return true;
-	},
-	
-	
-	movePiece: function(piece, to_block)
-	{
-		$(to_block).append($(piece));
-		startAudioMove();
-	}
-}
-
-/************************************************************/
 
 
 // Helpers

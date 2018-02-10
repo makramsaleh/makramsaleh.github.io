@@ -1,7 +1,7 @@
-html, body {padding:0; margin:0; background:#fff; overflow:hidden;}
+html, body {padding:0; margin:0; background:#FFDB4A; overflow:hidden;}
 * { font-family: 'Rammetto One', cursive; line-height:1.2em; text-transform:uppercase; }
-.board { border-radius:16px; padding:4px; width:400px; border:24px solid #FBF8F4; height:400px; margin:0px auto;}
-.turnstrip { display:block; width:240px; border-radius:20px; height:16px; margin:8px auto; opacity:0; }
+.board { border-radius:16px; padding:4px; width:400px; border:24px solid #FBF8F4; height:400px; margin:0px auto; background:#fff;}
+.turnstrip { display:block; width:360px; border-radius:20px; height:8px; margin:8px auto; opacity:0; }
 .turnstrip.red { background-color:#FF6867; }
 .turnstrip.blue { background-color:#01C4D0; }
 .board.off { border-color:black; }

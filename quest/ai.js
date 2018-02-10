@@ -3,8 +3,10 @@
 
 var AI = {
 	playTurn: function () {
-		new Analyzer().performBestMove();
-		update();
+		setTimeout(function() {
+			new Analyzer().performBestMove();
+			update();			
+		}, 400);
 	}
 }
 

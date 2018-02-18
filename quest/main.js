@@ -7,6 +7,10 @@ var sound_enabled = true;
 var against_AI = false;
 var game_mode = "wall";
 
+// Easter eggs mode
+var max_eggs = 8;
+var min_eggs = 2;
+
 var anim_speed = 200;
 
 // Start with a random turn
@@ -300,12 +304,7 @@ function resetGame()
 	}
 	
 	// add coins to board
-	var coin_row = board_size/2;
-	for (var i=0; i < board_size; i++) {
-		var p = $('<div class="coin"></div>');
-		coin_row = (coin_row==board_size/2)?board_size/2-1:board_size/2;
-		p.appendTo($("#b_"+(coin_row)+"_"+i));
-	}
+	initCoinsOnBoard();
 	
 	$( ".block" ).droppable({
 	      drop: function( event, ui ) {
@@ -320,6 +319,55 @@ function resetGame()
 	switchTurn();
 	
 	startAudioStart();
+}
+
+function initCoinsOnBoard() 
+{
+	switch(game_mode) {
+		case "wall":
+			var coin_row = board_size/2;
+			for (var i=0; i < board_size; i++) {
+				var p = $('<div class="coin"></div>');
+				coin_row = (coin_row==board_size/2)?board_size/2-1:board_size/2;
+				p.appendTo($("#b_"+(coin_row)+"_"+i));
+			}		
+		break;
+		
+		case "easter":
+			var rand = Math.floor(Math.random()*(max_eggs-min_eggs))+min_eggs;
+			
+			// All rows can host coins except first and last
+			var host_rows = board_size-2;
+			var coins_distribution = [];
+			// fill coins
+			for (var i=0; i < rand; i++) {
+				coins_distribution.push("x");
+			}
+			// fill empty spaces
+			var host_blocks = host_rows*board_size - rand;
+			for (var i=0; i < host_blocks; i++) {
+				coins_distribution.push("o");
+			}
+			
+			shuffle(coins_distribution);
+			
+			var index = 0;
+			var curr_row = 1;
+			for (var r=1; r < board_size-1; r++) {
+				for (var c=0; c < board_size; c++) {
+					if(coins_distribution[index] == "x"){
+						var p = $('<div class="coin"></div>');
+						p.appendTo($("#b_"+r+"_"+c));
+					}
+					index++;
+				};
+			}
+			
+		break;
+		
+		case "diamond":
+		break;
+	}
 }
 
 function getIfDropTargetIsValid(piece, droppable) 

@@ -15,6 +15,23 @@ function initInteractions()
 		hidePopup();
 	});
 	
+	// Game modes
+	$("#mode_wall").click(function() {
+		game_mode = "wall";
+		$(".selected").removeClass("selected");
+		$(this).addClass("selected");
+	});
+	$("#mode_easter").click(function() {
+		game_mode = "easter";
+		$(".selected").removeClass("selected");
+		$(this).addClass("selected");
+	});
+	$("#mode_diamond").click(function() {
+		game_mode = "diamond";
+		$(".selected").removeClass("selected");
+		$(this).addClass("selected");
+	});
+	
 	$("#btn_playagain").click(function() { showPopup("#popup_newgame"); });
 	$("#btn_replay").click(function() { showPopup("#popup_newgame"); });
 	$("#btn_continue").click(function() { hidePopup(); });

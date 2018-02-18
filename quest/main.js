@@ -5,6 +5,7 @@ var self = this;
 
 var sound_enabled = true;
 var against_AI = false;
+var game_mode = "wall";
 
 var anim_speed = 200;
 

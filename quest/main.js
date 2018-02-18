@@ -291,17 +291,7 @@ function resetGame()
 	$(".board").width(board_size*50).height(board_size*50)
 	
 	// Add peices 
-	// red (top)
-	for (var i=0; i < board_size; i++) {
-		var p = $('<div class="piece red"></div>');
-		p.appendTo($("#b_0_"+i));
-	}
-	
-	// blue (bottom)
-	for (var i=0; i < board_size; i++) {
-		var p = $('<div class="piece blue"></div>');
-		p.appendTo($("#b_"+(board_size-1)+"_"+i));
-	}
+	initPlayersOnBoard();
 	
 	// add coins to board
 	initCoinsOnBoard();
@@ -319,6 +309,43 @@ function resetGame()
 	switchTurn();
 	
 	startAudioStart();
+}
+
+function initPlayersOnBoard() 
+{
+	switch(game_mode) {
+		case "wall":
+		case "easter":
+			// full row per player
+			// red (top)
+			for (var i=0; i < board_size; i++) {
+				var p = $('<div class="piece red"></div>');
+				p.appendTo($("#b_0_"+i));
+			}
+			// blue (bottom)
+			for (var i=0; i < board_size; i++) {
+				var p = $('<div class="piece blue"></div>');
+				p.appendTo($("#b_"+(board_size-1)+"_"+i));
+			}
+		break;
+		
+		case "diamond":
+			// only 2 pieces per player
+			var per_player = 2;
+			var padding = Math.floor((board_size-per_player)/2);
+			console.log("PADDING "+padding);
+			// red
+			for (var i=padding; i < padding+per_player; i++) {
+				var p = $('<div class="piece red"></div>');
+				p.appendTo($("#b_0_"+i));
+			}
+			// blue
+			for (var i=padding; i < padding+per_player; i++) {
+				var p = $('<div class="piece blue"></div>');
+				p.appendTo($("#b_"+(board_size-1)+"_"+i));
+			}
+		break;
+	}
 }
 
 function initCoinsOnBoard() 
@@ -366,6 +393,19 @@ function initCoinsOnBoard()
 		break;
 		
 		case "diamond":
+			var dist = "oooooooooooxxoooooxxxxooooxxxxoooooxxooooooooooo";
+			var coins_distribution = dist.split("");
+			var index = 0;
+			var curr_row = 1;
+			for (var r=1; r < board_size-1; r++) {
+				for (var c=0; c < board_size; c++) {
+					if(coins_distribution[index] == "x"){
+						var p = $('<div class="coin"></div>');
+						p.appendTo($("#b_"+r+"_"+c));
+					}
+					index++;
+				};
+			}
 		break;
 	}
 }

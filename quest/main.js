@@ -7,6 +7,9 @@ var sound_enabled = true;
 var against_AI = false;
 var game_mode = "wall";
 
+var ENABLE_CONSOLE_LOG = true;
+var ENABLE_BOARD_PRINT = true;
+
 // Easter eggs mode
 var max_eggs = 8;
 var min_eggs = 2;
@@ -15,18 +18,37 @@ var anim_speed = 200;
 
 // Start with a random turn
 var current_turn = Math.random()>.5?"red":"blue";
+var ACTIVE_GAME;
+
+// Board piece codes
+var BOARD_EMPTY = 		"8";
+var BOARD_RED = 		"1";
+var BOARD_BLUE =  		"2";
+var BOARD_COIN = 		"3";
+var BOARD_FIXED_RED = 	"4";
+var BOARD_FIXED_BLUE = 	"5";
+
 
 
 $(function() {
 	
 	initAllAudio();
-
-	resetGame();
 	
 	initInteractions();
 	
 	showPopup("#popup_newgame");
 });
+
+function resetGame() 
+{
+	drawBoardBlocks();
+	
+	ACTIVE_GAME = new LiveGame();
+
+	switchTurn();
+	
+	startAudioStart();
+}
 
 
 function switchTurn() 
@@ -105,11 +127,11 @@ function update()
 		// rule: any piece surrounded by 2 opponent pieces on sides gets "captured"
 		// rule: captured pieces are removed from board
 		if(current_turn == "red") {
-			checkTrapped("blue");
-			checkTrapped("red");
+			checkCaptured("blue");
+			checkCaptured("red");
 		} else {
-			checkTrapped("red");
-			checkTrapped("blue");
+			checkCaptured("red");
+			checkCaptured("blue");
 		}
 	
 		// rule: pieces that reach the opposite end row will be frozen (can't be moved anymore) and count towards the player score
@@ -192,7 +214,7 @@ function checkGameOver()
 	return false;
 }
 
-function checkTrapped(color) 
+function checkCaptured(color) 
 {
 	$(".piece."+color).each(function() {
 		var ad = getAdjacentBlocks($(this).parent());
@@ -266,8 +288,7 @@ function getDiaginalBlocks(block)
 	return adjacents;
 }
 
-
-function resetGame() 
+function drawBoardBlocks() 
 {
 	$(".board *").remove();
 	$(".cage *").remove();
@@ -288,127 +309,20 @@ function resetGame()
 		b.appendTo(".board");
 		if(col!=board_size-1) odd = !odd;	//checkboard
 	}
-	$(".board").width(board_size*50).height(board_size*50)
+	$(".board").width(board_size*50).height(board_size*50);
 	
-	// Add peices 
-	initPlayersOnBoard();
-	
-	// add coins to board
-	initCoinsOnBoard();
-	
-	$( ".block" ).droppable({
-	      drop: function( event, ui ) {
-			if(getIfDropTargetIsValid( $(ui.draggable), $(this) )) {
-				$(ui.draggable).prependTo(this);
-				startAudioMove();
-				update();
-			}
-	      }
-	    });
-	
-	switchTurn();
-	
-	startAudioStart();
+	// Drop events
+	$(".block").droppable({
+	  drop: function(event, ui) {
+		if(getIfDropTargetIsValid( $(ui.draggable), $(this) )) {
+			$(ui.draggable).prependTo(this);
+			startAudioMove();
+			update();
+		}
+      }
+    });
 }
 
-function initPlayersOnBoard() 
-{
-	switch(game_mode) {
-		case "wall":
-		case "easter":
-			// full row per player
-			// red (top)
-			for (var i=0; i < board_size; i++) {
-				var p = $('<div class="piece red"></div>');
-				p.appendTo($("#b_0_"+i));
-			}
-			// blue (bottom)
-			for (var i=0; i < board_size; i++) {
-				var p = $('<div class="piece blue"></div>');
-				p.appendTo($("#b_"+(board_size-1)+"_"+i));
-			}
-		break;
-		
-		case "diamond":
-			// only 2 pieces per player
-			var per_player = 2;
-			var padding = Math.floor((board_size-per_player)/2);
-			console.log("PADDING "+padding);
-			// red
-			for (var i=padding; i < padding+per_player; i++) {
-				var p = $('<div class="piece red"></div>');
-				p.appendTo($("#b_0_"+i));
-			}
-			// blue
-			for (var i=padding; i < padding+per_player; i++) {
-				var p = $('<div class="piece blue"></div>');
-				p.appendTo($("#b_"+(board_size-1)+"_"+i));
-			}
-		break;
-	}
-}
-
-function initCoinsOnBoard() 
-{
-	switch(game_mode) {
-		case "wall":
-			var coin_row = board_size/2;
-			for (var i=0; i < board_size; i++) {
-				var p = $('<div class="coin"></div>');
-				coin_row = (coin_row==board_size/2)?board_size/2-1:board_size/2;
-				p.appendTo($("#b_"+(coin_row)+"_"+i));
-			}		
-		break;
-		
-		case "easter":
-			var rand = Math.floor(Math.random()*(max_eggs-min_eggs))+min_eggs;
-			
-			// All rows can host coins except first and last
-			var host_rows = board_size-2;
-			var coins_distribution = [];
-			// fill coins
-			for (var i=0; i < rand; i++) {
-				coins_distribution.push("x");
-			}
-			// fill empty spaces
-			var host_blocks = host_rows*board_size - rand;
-			for (var i=0; i < host_blocks; i++) {
-				coins_distribution.push("o");
-			}
-			
-			shuffle(coins_distribution);
-			
-			var index = 0;
-			var curr_row = 1;
-			for (var r=1; r < board_size-1; r++) {
-				for (var c=0; c < board_size; c++) {
-					if(coins_distribution[index] == "x"){
-						var p = $('<div class="coin"></div>');
-						p.appendTo($("#b_"+r+"_"+c));
-					}
-					index++;
-				};
-			}
-			
-		break;
-		
-		case "diamond":
-			var dist = "oooooooooooxxoooooxxxxooooxxxxoooooxxooooooooooo";
-			var coins_distribution = dist.split("");
-			var index = 0;
-			var curr_row = 1;
-			for (var r=1; r < board_size-1; r++) {
-				for (var c=0; c < board_size; c++) {
-					if(coins_distribution[index] == "x"){
-						var p = $('<div class="coin"></div>');
-						p.appendTo($("#b_"+r+"_"+c));
-					}
-					index++;
-				};
-			}
-		break;
-	}
-}
 
 function getIfDropTargetIsValid(piece, droppable) 
 {
@@ -425,7 +339,7 @@ function getIfDropTargetIsValid(piece, droppable)
 	var droppable_row = parseInt($(droppable).attr("id").split("_")[1]);
 	var droppable_col = parseInt($(droppable).attr("id").split("_")[2]);
 	
-	//console.log(droppable_row+"   "+piece_row+" --- "+droppable_col+"  "+piece_col);
+	//log(droppable_row+"   "+piece_row+" --- "+droppable_col+"  "+piece_col);
 	
 	// Allow dropping on top, bottom or sides
 	if(droppable_row==piece_row && droppable_col==piece_col-1) return true;
@@ -450,28 +364,4 @@ function isBlockEmpty(block)
 {
 	return (!$(block).has(".piece").length && !$(block).has(".coin").length);
 }
-
-
-// Helpers
-function shuffle(a) {
-    var j, x, i;
-    for (i = a.length; i; i--) {
-        j = Math.floor(Math.random() * i);
-        x = a[i - 1];
-        a[i - 1] = a[j];
-        a[j] = x;
-    }
-}
-
-$.arrayIntersect = function(a, b)
-{
-	var matches = [];
-    $.each(a, function(i,ea) {
-		$.each(b, function(j, eb) {
-			if($(ea).attr("id") == $(eb).attr("id")) matches.push(a[i]);
-		});
-	});
-	return matches;
-};
-
 

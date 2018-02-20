@@ -8,9 +8,9 @@ function Analyzer() {
 
 Analyzer.prototype.performBestMove = function() 
 {
-	var html_board = new VirtualBoard();
-	html_board.copyHTMLBoard();
+	var html_board = ACTIVE_GAME.getBoard();
 	
+	log("HTML Board");
 	html_board.print();
 	
 	var moves = html_board.getAllMoves();
@@ -18,16 +18,16 @@ Analyzer.prototype.performBestMove = function()
 	for (var i=0; i < moves.length; i++) {
 		var piece = moves[i][0];
 		var empty_block = moves[i][1];
-		console.log("form - to:");
-		console.log(piece);
-		console.log(empty_block);
+		log("form - to:");
+		log(piece);
+		log(empty_block);
 		
 		var move_board = new VirtualBoard();
 		move_board.copyFromBoard(html_board);
 		move_board.movePiece(piece, empty_block, current_turn);
 		moves[i][2] = move_board.getLastMoveScore();
 		moves[i][3] = move_board;
-		console.log("OPTION:");
+		log("OPTION:");
 		move_board.print();
 	};
 	
@@ -45,8 +45,8 @@ Analyzer.prototype.performBestMove = function()
 	shuffle(best_moves);
 	
 	// Update HTML board 
-	console.log("BEST MOVE:");
-	console.log("score: "+best_moves[0][2]);
+	log("BEST MOVE:");
+	log("score: "+best_moves[0][2]);
 	move_board.print();
 	best_moves[0][3].applyToHTMLBoard();
 }

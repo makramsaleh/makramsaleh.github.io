@@ -48,7 +48,7 @@ Analyzer.prototype.performBestMove = function()
 	log("BEST MOVE:");
 	log("score: "+best_moves[0][2]);
 	move_board.print();
-	best_moves[0][3].applyToHTMLBoard();
+	ACTIVE_GAME.commitAIMove(best_moves[0][3]);
 }
 
 function scoreCompare(a, b) {

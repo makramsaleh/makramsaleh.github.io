@@ -8,7 +8,7 @@ var against_AI = false;
 var game_mode = "wall";
 
 var ENABLE_CONSOLE_LOG = true;
-var ENABLE_BOARD_PRINT = true;
+var ENABLE_BOARD_PRINT = false;
 
 // Easter eggs mode
 var max_eggs = 8;
@@ -19,6 +19,9 @@ var anim_speed = 200;
 // Start with a random turn
 var current_turn = Math.random()>.5?"red":"blue";
 var ACTIVE_GAME;
+
+var start_drag_block;
+var drop_block;
 
 // Board piece codes
 var BOARD_EMPTY = 		"8";
@@ -62,6 +65,7 @@ function switchTurn()
 	$(".piece").draggable("destroy");
 	$(".piece."+current_turn).draggable({
 		start: function(){
+			start_drag_block = $(this).parent();
 			var ad = getAdjacentBlocks($(this).parent());
 			$.each(ad, function(j,e) { 
 				if(!$(e).has(".piece").length && !$(e).has(".coin").length) { $(e).addClass("active"); }
@@ -105,49 +109,10 @@ function update()
 	if(current_turn == "blue") moves_blue++;
 	
 	if(current_turn=="blue" || (current_turn=="red" && !against_AI)) {
-				
-		// rule: coins switch to either blue or red piece if surrounded by that color from 2 adjacent sides
-		// check if any coin is adjacent to red or blue piece
-		$(".coin").each(function() {
-			var ad = getAdjacentBlocks($(this).parent());
-			var blue_adjacent = 0;
-			var red_adjacent = 0;
-			$.each(ad, function(j,e) { 
-				if($(e).find(".piece.red").length) red_adjacent++;
-				if($(e).find(".piece.blue").length) blue_adjacent++;
-			});
-			if(red_adjacent>=2) { 
-				replaceCoin(this, "red");
-			}
-			if(blue_adjacent>=2) {
-				replaceCoin(this, "blue");
-			}
-		});
-	
-		// rule: any piece surrounded by 2 opponent pieces on sides gets "captured"
-		// rule: captured pieces are removed from board
-		if(current_turn == "red") {
-			checkCaptured("blue");
-			checkCaptured("red");
-		} else {
-			checkCaptured("red");
-			checkCaptured("blue");
-		}
-	
-		// rule: pieces that reach the opposite end row will be frozen (can't be moved anymore) and count towards the player score
-		// 
-		// rule: if all pieces of any player are captured and/or reached end row the game is over 
-		// rule: player with most pieces on the board wins
-	
-		// Freeze pieces that arrived at the last row
-		for (var i=0; i < board_size; i++) {
-			if($('#b_0_'+i+" .blue").length) startAudioFreeze();
-			$('#b_0_'+i+" .blue").addClass("blue-fixed").removeClass("blue");
-		}
-		for (var i=0; i < board_size; i++) {
-			if($('#b_'+(board_size-1)+'_'+i+" .red").length) startAudioFreeze();
-			$('#b_'+(board_size-1)+'_'+i+" .red").addClass("red-fixed").removeClass("red");
-		}
+		
+		// Update active game virtual board
+		ACTIVE_GAME.updateAfterHumanMove();
+		
 	}
 	
 	var winner = checkGameOver();
@@ -315,6 +280,7 @@ function drawBoardBlocks()
 	$(".block").droppable({
 	  drop: function(event, ui) {
 		if(getIfDropTargetIsValid( $(ui.draggable), $(this) )) {
+			drop_block = this;
 			$(ui.draggable).prependTo(this);
 			startAudioMove();
 			update();

@@ -33,6 +33,7 @@ LiveGame.prototype.updateAfterHumanMove = function ()
 	var empty_block = [parseInt($(drop_block).attr("id").split("_")[1]), parseInt($(drop_block).attr("id").split("_")[2])];
 	
 	this.activeBoard.movePiece(piece, empty_block, current_turn);
+	this.activeBoard.applyToHTMLBoard();
 }
 
 

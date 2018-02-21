@@ -97,6 +97,7 @@ function replaceCoin(coin, piece_color)
 
 function replaceCaptured(piece) 
 {
+	log("replaceCaptured------------------");
 	var captured = $(piece).clone()
 	$(captured).removeClass("piece").addClass("captured").appendTo(".cage").hide().toggle("drop", {direction:"right"});
 	$(piece).toggle("drop", function() {$(this).remove()});

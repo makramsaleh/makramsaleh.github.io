@@ -265,7 +265,7 @@ VirtualBoard.prototype.applyToHTMLBoard = function() {
 	// Cage
 	$(".cage").empty();
 	for (var i=0; i < this.cage.length; i++) {
-		var pclass = this.cage[i]===1?"red captured":"blue captured";
+		var pclass = this.cage[i]===BOARD_RED?"red captured":"blue captured";
 		$('<div class="'+pclass+'"></div>').appendTo(".cage");
 	};
 }

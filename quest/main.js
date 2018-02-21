@@ -1,4 +1,4 @@
-var board_size = 8;
+var board_size = 6;
 var moves_red = 0;
 var moves_blue = 0;
 var self = this;

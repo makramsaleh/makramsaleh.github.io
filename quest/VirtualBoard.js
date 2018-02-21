@@ -402,7 +402,7 @@ VirtualBoard.prototype.updateFreeze = function()
 			this.freezePiece([0,c], BOARD_BLUE);
 		}
 	}
-	for (var i=0; i < board_size; i++) {
+	for (var c=0; c < board_size; c++) {
 		// bottom row for red
 		if(this.board[board_size-1][c] === BOARD_RED) {
 			this.freezePiece([board_size-1,c], BOARD_RED);

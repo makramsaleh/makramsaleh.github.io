@@ -1,11 +1,11 @@
 /************************************************************
-	LiveGame class
+	VirtualGame class
 	
 	Maintains and manages the active board
 */
 
 
-function LiveGame()
+function VirtualGame()
 {
 	this.activeBoard = new VirtualBoard();
 	this.activeBoard.initBlankBoard();
@@ -16,22 +16,22 @@ function LiveGame()
 }
 
 
-LiveGame.prototype.getBoard = function () 
+VirtualGame.prototype.getBoard = function () 
 {	
 	return this.activeBoard;
 }
-LiveGame.prototype.checkGameOver = function () 
+VirtualGame.prototype.checkGameOver = function () 
 {	
 	return this.activeBoard.getWinner();
 }
 
-LiveGame.prototype.commitAIMove = function (best_board) 
+VirtualGame.prototype.commitAIMove = function (best_board) 
 {
 	this.activeBoard.copyFromBoard(best_board);
 	this.activeBoard.applyToHTMLBoard();
 	update();
 }
-LiveGame.prototype.updateAfterHumanMove = function () 
+VirtualGame.prototype.updateAfterHumanMove = function () 
 {	
 	var moved_piece_type = (current_turn=="red") ? BOARD_RED : BOARD_BLUE;
 	

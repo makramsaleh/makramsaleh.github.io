@@ -46,7 +46,7 @@ function resetGame()
 {
 	drawBoardBlocks();
 	
-	ACTIVE_GAME = new LiveGame();
+	ACTIVE_GAME = new VirtualGame();
 
 	switchTurn();
 	

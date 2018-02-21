@@ -97,7 +97,6 @@ function replaceCoin(coin, piece_color)
 
 function replaceCaptured(piece) 
 {
-	log("replaceCaptured------------------");
 	var captured = $(piece).clone()
 	$(captured).removeClass("piece").addClass("captured").appendTo(".cage").hide().toggle("drop", {direction:"right"});
 	$(piece).toggle("drop", function() {$(this).remove()});
@@ -110,13 +109,12 @@ function update()
 	if(current_turn == "blue") moves_blue++;
 	
 	if(current_turn=="blue" || (current_turn=="red" && !against_AI)) {
-		
 		// Update active game virtual board
 		ACTIVE_GAME.updateAfterHumanMove();
-		
 	}
 	
-	var winner = checkGameOver();
+	var winner = ACTIVE_GAME.checkGameOver();
+	log("WINNER ============== "+winner);
 	if(winner == "tie") {
 		$(".board").removeClass("blue").removeClass("red").addClass("off");
 		showWinnerPopup("IT'S A TIE!");
@@ -130,54 +128,6 @@ function update()
 	}
 	
 	switchTurn();
-}
-
-function checkGameOver() 
-{
-	// TODO what if last piece was trapped between 3 coins and opponent => no more possible moves
-	
-	var pieces_red = $(".piece.red").length;
-	var frozen_red = $(".red-fixed").length;
-	var pieces_blue = $(".piece.blue").length;
-	var frozen_blue = $(".blue-fixed").length;
-	
-	// rule: only check winners when both players played same number of moves or when both 
-	//       players have no more unfrozen pieces 
-	// rule: red wins if all blue pieces are captured and red frozen and active are more than blue frozen
-	// rule: red wins also if all pieces of red are frozen and are more than blue frozen pieces, even if 
-	//       blue still has unfrozen pieces
-	
-	// Do nothing if both players still have free (unfrozen) pieces
-	if(pieces_red && pieces_blue) {
-		return false;
-	}
-	
-	// ...now we know at least one of the players don't have free pieces,
-	//    let's check if both played the same number of moves and can still play
-	var red_can_play = (pieces_red>0) && moves_red<moves_blue && current_turn=="blue";
-	var blue_can_play = (pieces_blue>0) && moves_blue<moves_red && current_turn=="red";
-	if(red_can_play || blue_can_play) {
-		return false;
-	}
-	
-	// ...now we know that both players played the same number of moves. Let's check if we have a tie
-	// TIE
-	if( (!pieces_blue && !pieces_red) && (frozen_red == frozen_blue) ) {
-		return "tie";
-	}
-	
-	//...now that we know it's not a tie, let's see who won
-	
-	// red wins
-	if(  (!pieces_blue && (frozen_red+pieces_red > frozen_blue)) || (!pieces_red && frozen_red>frozen_blue)  ) {
-		return "red";
-	}
-	// blue wins
-	if(  (!pieces_red && (frozen_blue+pieces_blue > frozen_red)) || (!pieces_blue && frozen_blue>frozen_red)  ) {
-		return "blue";
-	}
-	
-	return false;
 }
 
 function checkCaptured(color) 

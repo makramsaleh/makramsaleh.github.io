@@ -15,15 +15,21 @@ function LiveGame()
 	this.activeBoard.applyToHTMLBoard();
 }
 
+
 LiveGame.prototype.getBoard = function () 
 {	
 	return this.activeBoard;
+}
+LiveGame.prototype.checkGameOver = function () 
+{	
+	return this.activeBoard.getWinner();
 }
 
 LiveGame.prototype.commitAIMove = function (best_board) 
 {
 	this.activeBoard.copyFromBoard(best_board);
 	this.activeBoard.applyToHTMLBoard();
+	update();
 }
 LiveGame.prototype.updateAfterHumanMove = function () 
 {	

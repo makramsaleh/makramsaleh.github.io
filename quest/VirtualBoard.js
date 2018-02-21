@@ -18,6 +18,7 @@ function VirtualBoard() {
 	// Score settings
 	this.move_score_win = 1000;
 	this.move_score_lose = -1000;
+	this.move_score_tie = 0; // TODO think if tie is meaningful 
 	this.move_score_trap_blue = 100;
 	this.move_score_trap_red = -100;
 	this.move_score_coin_red = 50;
@@ -142,6 +143,10 @@ VirtualBoard.prototype.getCage = function()
 VirtualBoard.prototype.getLastMoveScore = function() 
 {
 	return this.last_move_score;
+}
+VirtualBoard.prototype.countAllFromType = function(type)
+{
+	return this.getAllFromType(type).length;
 }
 VirtualBoard.prototype.getAllFromType = function(type)
 {
@@ -372,25 +377,13 @@ VirtualBoard.prototype.updateAfterMove = function(turn)
 	// rule: player with most pieces on the board wins
 	this.updateFreeze();
 	
-	
 	this.last_move_score -= this.getPiecesInDanger(BOARD_RED);
 	this.last_move_score += this.getPiecesInDanger(BOARD_BLUE);
 	
-	// TODO
-	/*
-	var winner = checkGameOver();
-	if(winner == "tie") {
-		$(".board").removeClass("blue").removeClass("red").addClass("off");
-		alert("IT'S A TIE!");
-		startAudioWin();
-		return;
-	} else if(winner.length) {
-		$(".board").removeClass("blue").removeClass("red").addClass(winner);
-		alert((winner+" won!").toUpperCase());
-		startAudioWin();
-		return;
-	}
-	*/
+	var winner = this.getWinner();
+	if(winner === "blue") this.last_move_score += this.move_score_lose;
+	if(winner === "red") this.last_move_score += this.move_score_win;
+	if(winner === "tie") this.last_move_score += this.move_score_tie;
 }
 
 VirtualBoard.prototype.updateFreeze = function() 
@@ -472,3 +465,61 @@ VirtualBoard.prototype.print = function()
 	log(str);
 }
 
+
+/**
+	getWinner
+	
+	CHecks who won this board and returns one of the following
+	
+	false	no wiiner
+	"red"	red won
+	"blue"	blue won
+	"tie"	it's a tie		
+*/
+VirtualBoard.prototype.getWinner = function()
+{
+	// TODO what if last piece was trapped between 3 coins and opponent => no more possible moves
+	
+	var pieces_red = this.countAllFromType(BOARD_RED);
+	var frozen_red = this.countAllFromType(BOARD_FIXED_RED);
+	var pieces_blue = this.countAllFromType(BOARD_BLUE);
+	var frozen_blue = this.countAllFromType(BOARD_FIXED_BLUE);
+	
+	// rule: only check winners when both players played same number of moves or when both 
+	//       players have no more unfrozen pieces 
+	// rule: red wins if all blue pieces are captured and red frozen and active are more than blue frozen
+	// rule: red wins also if all pieces of red are frozen and are more than blue frozen pieces, even if 
+	//       blue still has unfrozen pieces
+	
+	// Do nothing if both players still have free (unfrozen) pieces
+	if(pieces_red && pieces_blue) {
+		return false;
+	}
+	
+	// ...now we know at least one of the players don't have free pieces,
+	//    let's check if both played the same number of moves and can still play
+	var red_can_play = (pieces_red>0) && moves_red<moves_blue && current_turn=="blue";
+	var blue_can_play = (pieces_blue>0) && moves_blue<moves_red && current_turn=="red";
+	if(red_can_play || blue_can_play) {
+		return false;
+	}
+	
+	// ...now we know that both players played the same number of moves. Let's check if we have a tie
+	// TIE
+	if( (!pieces_blue && !pieces_red) && (frozen_red == frozen_blue) ) {
+		return "tie";
+	}
+	
+	//...now that we know it's not a tie, let's see who won
+	
+	// red wins
+	if(  (!pieces_blue && (frozen_red+pieces_red > frozen_blue)) || (!pieces_red && frozen_red>frozen_blue)  ) {
+		return "red";
+	}
+	// blue wins
+	if(  (!pieces_red && (frozen_blue+pieces_blue > frozen_red)) || (!pieces_blue && frozen_blue>frozen_red)  ) {
+		return "blue";
+	}
+	
+	return false;
+}

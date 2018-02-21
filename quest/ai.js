@@ -4,8 +4,7 @@
 var AI = {
 	playTurn: function () {
 		setTimeout(function() {
-			new Analyzer().performBestMove();
-			update();			
+			new Analyzer().performBestMove();			
 		}, 400);
 	}
 }

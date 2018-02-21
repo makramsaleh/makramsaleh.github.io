@@ -61,6 +61,17 @@ function switchTurn()
 	$(".turnstrip").css({"opacity":0});	
 	$(".turnstrip."+current_turn).css({"opacity":1});
 	
+	// TODO 
+	// check if current player is trapped 
+	// 	    if both player played the same number of moves, declare the other as winner, otherwise
+	// 	    pass the turn to the next player
+	// 
+	// moves_red
+	// moves_blue
+	//var possible_moves_red = this.getAllMovesFromType(BOARD_RED).length;
+	//var possible_moves_blue = this.getAllMovesFromType(BOARD_BLUE).length;
+	
+	
 	$(".piece").draggable();
 	$(".piece").draggable("destroy");
 	$(".piece."+current_turn).draggable({
@@ -113,8 +124,9 @@ function update()
 		ACTIVE_GAME.updateAfterHumanMove();
 	}
 	
+	
 	var winner = ACTIVE_GAME.checkGameOver();
-	log("WINNER ============== "+winner);
+	
 	if(winner == "tie") {
 		$(".board").removeClass("blue").removeClass("red").addClass("off");
 		showWinnerPopup("IT'S A TIE!");

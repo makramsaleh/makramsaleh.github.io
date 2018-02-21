@@ -158,7 +158,7 @@ VirtualBoard.prototype.getAllFromType = function(type)
 	}
 	return all;
 }
-VirtualBoard.prototype.getAllMoves = function()
+VirtualBoard.prototype.getAllMovesFromType = function(type)
 {
 	/*
 
@@ -169,20 +169,25 @@ VirtualBoard.prototype.getAllMoves = function()
 	*/
 	var moves = [];
 	
-	var all_reds = this.getAllFromType(BOARD_RED);
+	var all_player_pieces = this.getAllFromType(type);
 	
 	// find all empty adjacents to all reds
-	for (var i=0; i < all_reds.length; i++) {
-		var adjacents = this.getAllAdjacents(all_reds[i][0], all_reds[i][1]);
+	for (var i=0; i < all_player_pieces.length; i++) {
+		var adjacents = this.getAllAdjacents(all_player_pieces[i][0], all_player_pieces[i][1]);
 		// find only empty ones
 		for (var k=0; k < adjacents.length; k++) {
 			if(this.board[adjacents[k][0]][adjacents[k][1]] === BOARD_EMPTY) {
-				moves.push( [all_reds[i], adjacents[k]] );
+				moves.push( [all_player_pieces[i], adjacents[k]] );
 			}
 		}
 	}
 	
 	return moves;
+}
+
+VirtualBoard.prototype.getAllMoves = function()
+{
+	return this.getAllMovesFromType(BOARD_RED);
 }
 
 VirtualBoard.prototype.getAllAdjacents = function(block_row, block_col) 
@@ -478,8 +483,6 @@ VirtualBoard.prototype.print = function()
 */
 VirtualBoard.prototype.getWinner = function()
 {
-	// TODO what if last piece was trapped between 3 coins and opponent => no more possible moves
-	
 	var pieces_red = this.countAllFromType(BOARD_RED);
 	var frozen_red = this.countAllFromType(BOARD_FIXED_RED);
 	var pieces_blue = this.countAllFromType(BOARD_BLUE);

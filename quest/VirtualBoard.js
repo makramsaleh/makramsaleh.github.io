@@ -245,7 +245,7 @@ VirtualBoard.prototype.applyToHTMLBoard = function() {
 				// Coins
 				if( $(existing_piece).hasClass("coin") && piece_class.indexOf("piece")!=-1) {
 					var next_color = piece_class.split(" ")[1];
-					replaceCoin(existing_piece, next_color);
+					HTMLInterface.replaceCoin(existing_piece, next_color);
 				} else {
 					block.empty();
 					if(piece_class != "") {
@@ -254,7 +254,7 @@ VirtualBoard.prototype.applyToHTMLBoard = function() {
 				}
 				
 				if(piece_class.indexOf("piece")!=-1 && piece_class=="") {
-					replaceCaptured(existing_piece);
+					HTMLInterface.replaceCaptured(existing_piece);
 				}
 				
 			} else {

@@ -29,17 +29,14 @@ var BOARD_FIXED_RED = 	"4";
 var BOARD_FIXED_BLUE = 	"5";
 
 
-$(function() {
-	
-	initAllAudio();
-	
-	initInteractions();
-	
-	showPopup("#popup_newgame");
-});
-
-
 var HTMLInterface = {
+	
+	init: function() 
+	{
+		initAllAudio();
+		initInteractions();
+		showPopup("#popup_newgame");
+	},
 	
 	resetGame: function(against_AI) 
 	{
@@ -91,36 +88,28 @@ var HTMLInterface = {
 			showWinnerPopup(winner+" wins!");
 			startAudioWin();
 		}
+	},
+
+	replaceCoin: function(coin, piece_color) 
+	{
+		var p = $('<div class="piece '+piece_color+'"></div>');
+		p.prependTo($(coin).parent());
+
+		$(coin).toggle("drop", function() {$(this).remove()});
+		$(p).hide().toggle("drop", {direction:"right"});
+
+		startAudioCoin();
+	},
+
+	replaceCaptured: function(piece) 
+	{
+		var captured = $(piece).clone()
+		$(captured).removeClass("piece").addClass("captured").appendTo(".cage").hide().toggle("drop", {direction:"right"});
+		$(piece).toggle("drop", function() {$(this).remove()});
+		startAudioCapture();
 	}
 	
 }
-
-
-
-function replaceCoin(coin, piece_color) 
-{
-	var p = $('<div class="piece '+piece_color+'"></div>');
-	p.prependTo($(coin).parent());
-	
-	$(coin).toggle("drop", function() {$(this).remove()});
-	$(p).hide().toggle("drop", {direction:"right"});
-	
-	startAudioCoin();
-}
-
-function replaceCaptured(piece) 
-{
-	var captured = $(piece).clone()
-	$(captured).removeClass("piece").addClass("captured").appendTo(".cage").hide().toggle("drop", {direction:"right"});
-	$(piece).toggle("drop", function() {$(this).remove()});
-	startAudioCapture();
-}
-
-function update() 
-{	
-	
-}
-
 
 function getAdjacentBlocks(block) 
 {
@@ -148,39 +137,7 @@ function getAdjacentBlocks(block)
 	
 	return adjacents;
 }
-function getDiaginalBlocks(block) 
-{
-	// Get all adjacent blocks (X)
-	var block_id = $(block).attr("id");
-	var block_row = parseInt(block_id.split("_")[1]);
-	var block_col = parseInt(block_id.split("_")[2]);
-	
-	var adjacents = [];
-	
-	// top
-	var tr = block_row-1;
-	if(tr >= 0) {
-		// left
-		var bc = block_col-1;
-		if(bc >= 0) adjacents.push($("#b_"+tr+"_"+bc));
-		// right
-		var bc = block_col+1;
-		if(bc < board_size) adjacents.push($("#b_"+tr+"_"+bc));
-	}
-	
-	// bottom
-	var tr = block_row+1;
-	if(tr < board_size) {
-		// left
-		var bc = block_col-1;
-		if(bc >= 0) adjacents.push($("#b_"+tr+"_"+bc));
-		// right
-		var bc = block_col+1;
-		if(bc < board_size) adjacents.push($("#b_"+tr+"_"+bc));
-	}
-	
-	return adjacents;
-}
+
 
 function drawBoardBlocks() 
 {
@@ -237,9 +194,7 @@ function getIfDropTargetIsValid(piece, droppable)
 	
 	var droppable_row = parseInt($(droppable).attr("id").split("_")[1]);
 	var droppable_col = parseInt($(droppable).attr("id").split("_")[2]);
-	
-	//log(droppable_row+"   "+piece_row+" --- "+droppable_col+"  "+piece_col);
-	
+		
 	// Allow dropping on top, bottom or sides
 	if(droppable_row==piece_row && droppable_col==piece_col-1) return true;
 	if(droppable_row==piece_row && droppable_col==piece_col+1) return true;
@@ -249,18 +204,7 @@ function getIfDropTargetIsValid(piece, droppable)
 	return false;
 }
 
-function getLastRowBlocks(player_color) 
-{
-	var blocks = [];
-	var rowc = player_color=="red"?board_size-1:0;
-	for (var i=0; i < board_size; i++) {
-		blocks.push($("#b_"+rowc+"_"+i));
-	}
-	return blocks;
-}
 
-function isBlockEmpty(block) 
-{
-	return (!$(block).has(".piece").length && !$(block).has(".coin").length);
-}
-
+$(function() {
+	HTMLInterface.init();
+});

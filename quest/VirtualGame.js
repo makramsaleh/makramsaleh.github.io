@@ -44,7 +44,6 @@ VirtualGame.prototype.checkGameOver = function ()
 {	
 	return this.active_board.getWinner();
 }
-
 VirtualGame.prototype.switchTurn = function () 
 {
 	this.current_turn = this.current_turn=="blue"?"red":"blue";

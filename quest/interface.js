@@ -5,13 +5,11 @@ function initInteractions()
 	});
 	
 	$("#newgame_1player").click(function() {
-		against_AI = true;
-		resetGame();
+		HTMLInterface.resetGame(true);
 		hidePopup();
 	});
 	$("#newgame_2players").click(function() {
-		against_AI = false;
-		resetGame();
+		HTMLInterface.resetGame(false);
 		hidePopup();
 	});
 	

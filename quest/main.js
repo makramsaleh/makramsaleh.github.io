@@ -1,6 +1,4 @@
 var board_size = 6;
-var moves_red = 0;
-var moves_blue = 0;
 var self = this;
 
 var sound_enabled = true;
@@ -17,7 +15,6 @@ var min_eggs = 2;
 var anim_speed = 200;
 
 // Start with a random turn
-var current_turn = Math.random()>.5?"red":"blue";
 var ACTIVE_GAME;
 
 var start_drag_block;
@@ -32,7 +29,6 @@ var BOARD_FIXED_RED = 	"4";
 var BOARD_FIXED_BLUE = 	"5";
 
 
-
 $(function() {
 	
 	initAllAudio();
@@ -42,58 +38,64 @@ $(function() {
 	showPopup("#popup_newgame");
 });
 
-function resetGame() 
-{
-	drawBoardBlocks();
-	
-	ACTIVE_GAME = new VirtualGame();
 
-	switchTurn();
+var HTMLInterface = {
 	
-	startAudioStart();
-}
+	resetGame: function(against_AI) 
+	{
+		drawBoardBlocks();
 
+		ACTIVE_GAME = new VirtualGame();
+		ACTIVE_GAME.startNewGame(against_AI, true);
 
-function switchTurn() 
-{
-	current_turn = current_turn=="blue"?"red":"blue";
+		startAudioStart();
+	},
 	
-	$(".turnstrip").css({"opacity":0});	
-	$(".turnstrip."+current_turn).css({"opacity":1});
+	updateAfterTurnSwitch: function() 
+	{
+		var current_turn = ACTIVE_GAME.getCurrentTurn();
+
+		$(".turnstrip").css({"opacity":0});	
+		$(".turnstrip."+current_turn).css({"opacity":1});
+		
+
+		$(".piece").draggable();
+		$(".piece").draggable("destroy");
+		$(".piece."+current_turn).draggable({
+			start: function(){
+				start_drag_block = $(this).parent();
+				var ad = getAdjacentBlocks($(this).parent());
+				$.each(ad, function(j,e) { 
+					if(!$(e).has(".piece").length && !$(e).has(".coin").length) { $(e).addClass("active"); }
+				});
+				// raise dragged piece above all others
+				$(".block").css({"z-index":100});
+				$(this).parent().css({"z-index":3000});
+			},
+			stop: function () 
+			{
+				$(this).css({top:0,left:0});
+				$(".active").removeClass("active");
+			}
+		});
+	},
 	
-	// TODO 
-	// check if current player is trapped 
-	// 	    if both player played the same number of moves, declare the other as winner, otherwise
-	// 	    pass the turn to the next player
-	// 
-	// moves_red
-	// moves_blue
-	//var possible_moves_red = this.getAllMovesFromType(BOARD_RED).length;
-	//var possible_moves_blue = this.getAllMovesFromType(BOARD_BLUE).length;
-	
-	
-	$(".piece").draggable();
-	$(".piece").draggable("destroy");
-	$(".piece."+current_turn).draggable({
-		start: function(){
-			start_drag_block = $(this).parent();
-			var ad = getAdjacentBlocks($(this).parent());
-			$.each(ad, function(j,e) { 
-				if(!$(e).has(".piece").length && !$(e).has(".coin").length) { $(e).addClass("active"); }
-			});
-			// raise dragged piece above all others
-			$(".block").css({"z-index":100});
-			$(this).parent().css({"z-index":3000});
-		},
-		stop: function () 
-		{
-			$(this).css({top:0,left:0});
-			$(".active").removeClass("active");
+	performGameOverCeremony: function(winner) 
+	{
+		if(winner == "tie") {
+			$(".board").removeClass("blue").removeClass("red").addClass("off");
+			showWinnerPopup("IT'S A TIE!");
+			startAudioWin();
+		} else if(winner.length) {
+			$(".board").removeClass("blue").removeClass("red").addClass(winner);
+			showWinnerPopup(winner+" wins!");
+			startAudioWin();
 		}
-	});
+	}
 	
-	if(current_turn == "red" && against_AI) AI.playTurn();
 }
+
+
 
 function replaceCoin(coin, piece_color) 
 {
@@ -116,45 +118,9 @@ function replaceCaptured(piece)
 
 function update() 
 {	
-	if(current_turn == "red") moves_red++;
-	if(current_turn == "blue") moves_blue++;
 	
-	if(current_turn=="blue" || (current_turn=="red" && !against_AI)) {
-		// Update active game virtual board
-		ACTIVE_GAME.updateAfterHumanMove();
-	}
-	
-	
-	var winner = ACTIVE_GAME.checkGameOver();
-	
-	if(winner == "tie") {
-		$(".board").removeClass("blue").removeClass("red").addClass("off");
-		showWinnerPopup("IT'S A TIE!");
-		startAudioWin();
-		return;
-	} else if(winner.length) {
-		$(".board").removeClass("blue").removeClass("red").addClass(winner);
-		showWinnerPopup(winner+" wins!");
-		startAudioWin();
-		return;
-	}
-	
-	switchTurn();
 }
 
-function checkCaptured(color) 
-{
-	$(".piece."+color).each(function() {
-		var ad = getAdjacentBlocks($(this).parent());
-		var opponent_adjacent = 0;
-		$.each(ad, function(j,e) { 
-			if($(e).find(".piece."+(color=="blue"?"red":"blue")).length) opponent_adjacent++;
-		});
-		if(opponent_adjacent>=2) { 
-			replaceCaptured(this);			
-		}
-	});
-}
 
 function getAdjacentBlocks(block) 
 {
@@ -246,7 +212,11 @@ function drawBoardBlocks()
 			drop_block = this;
 			$(ui.draggable).prependTo(this);
 			startAudioMove();
-			update();
+			
+			var piece = [parseInt($(start_drag_block).attr("id").split("_")[1]), parseInt($(start_drag_block).attr("id").split("_")[2])];
+			var empty_block = [parseInt($(drop_block).attr("id").split("_")[1]), parseInt($(drop_block).attr("id").split("_")[2])];
+			
+			ACTIVE_GAME.commitHumanMove(piece, empty_block);
 		}
       }
     });

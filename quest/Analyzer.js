@@ -24,7 +24,7 @@ Analyzer.prototype.performBestMove = function()
 		
 		var move_board = new VirtualBoard();
 		move_board.copyFromBoard(html_board);
-		move_board.movePiece(piece, empty_block, current_turn);
+		move_board.movePiece(piece, empty_block, ACTIVE_GAME.getCurrentTurn());
 		moves[i][2] = move_board.getLastMoveScore();
 		moves[i][3] = move_board;
 		log("OPTION:");

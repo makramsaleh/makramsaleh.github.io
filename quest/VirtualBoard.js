@@ -21,8 +21,8 @@ function VirtualBoard() {
 	this.move_score_win = 1000;
 	this.move_score_lose = -1000;
 	this.move_score_tie = 0; // TODO think if tie is meaningful 
-	this.move_score_trap_blue = 100;
-	this.move_score_trap_red = -100;
+	this.move_score_trap_blue = 200;
+	this.move_score_trap_red = -200;
 	this.move_score_coin_red = 50;
 	this.move_score_coin_blue = -50;
 	this.move_score_freeze = 200;

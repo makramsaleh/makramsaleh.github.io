@@ -1,4 +1,4 @@
-var board_size = 6;
+var board_size = 8;
 var self = this;
 
 var sound_enabled = true;
@@ -12,7 +12,7 @@ var ENABLE_BOARD_PRINT = false;
 var max_eggs = 8;
 var min_eggs = 2;
 
-var anim_speed = 200;
+var anim_speed = 150;
 
 // Start with a random turn
 var ACTIVE_GAME;

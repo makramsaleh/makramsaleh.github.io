@@ -42,8 +42,8 @@ var HTMLInterface = {
 	{
 		drawBoardBlocks();
 
-		ACTIVE_GAME = new VirtualGame();
-		ACTIVE_GAME.startNewGame(against_AI, true);
+		ACTIVE_GAME = new VirtualGame(true);
+		ACTIVE_GAME.startNewGame(against_AI);
 
 		startAudioStart();
 	},

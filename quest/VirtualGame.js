@@ -5,18 +5,19 @@
 */
 
 
-function VirtualGame()
+function VirtualGame(updates_html)
 {
 	this.moves_red;			// Int
 	this.moves_blue;		// Int
 	this.current_turn;		// String
 	this.active_board;		// VirtualBoard
 	this.against_AI;		// Boolean
-	this.updates_html;		// Boolean
 	this.is_active;			// Boolean
+
+	this.updates_html = updates_html;	
 }
 
-VirtualGame.prototype.startNewGame = function (against_AI, updates_html) 
+VirtualGame.prototype.startNewGame = function (against_AI) 
 {	
 	this.is_active = true;
 	
@@ -26,7 +27,6 @@ VirtualGame.prototype.startNewGame = function (against_AI, updates_html)
 	this.against_AI = against_AI;
 	this.active_board = new VirtualBoard();
 	this.active_board.initBlankBoard();
-	this.updates_html = updates_html;
 	
 	if(this.updates_html) {
 		this.active_board.applyToHTMLBoard();		

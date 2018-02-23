@@ -13,6 +13,8 @@
 function VirtualBoard() {
 	this.board = [];
 	this.cage = [];
+	this.caged_locations = [];	// keep track of trapped to remove them from html interface with animation
+
 	this.last_move_score = 0;
 	
 	// Score settings
@@ -44,6 +46,10 @@ VirtualBoard.prototype.initBlankBoard = function()
 	
 	this.initPlayers();
 	this.initCoins();
+	
+	if(this.updates_html) {
+		this.active_board.applyToHTMLBoard();
+	}
 }
 VirtualBoard.prototype.initPlayers = function() 
 {
@@ -140,6 +146,10 @@ VirtualBoard.prototype.getCage = function()
 {
 	return this.cage;
 }
+VirtualBoard.prototype.getCagedLocations = function() 
+{
+	return this.caged_locations;
+}
 VirtualBoard.prototype.getLastMoveScore = function() 
 {
 	return this.last_move_score;
@@ -232,10 +242,19 @@ VirtualBoard.prototype.applyToHTMLBoard = function() {
 				break;
 			}
 			
-			
 			// Replace old piece with new piece with animation
 			if(block.children().length > 0) {
 				var existing_piece = $(block).children().first();
+				
+				// Captured
+				var is_caged = false;
+				for (var i=0; i < this.caged_locations.length; i++) {
+					if(this.caged_locations[i][0]==r && this.caged_locations[i][1]==c) {
+						is_caged = true;
+						HTMLInterface.replaceCaptured(existing_piece);
+					}
+				}
+				if(is_caged) continue;
 				
 				// Coins
 				if( $(existing_piece).hasClass("coin") && piece_class.indexOf("piece")!=-1) {
@@ -246,10 +265,6 @@ VirtualBoard.prototype.applyToHTMLBoard = function() {
 					if(piece_class != "") {
 						$('<div class="'+piece_class+' auto"></div>').prependTo(block);
 					}
-				}
-				
-				if(piece_class.indexOf("piece")!=-1 && piece_class=="") {
-					HTMLInterface.replaceCaptured(existing_piece);
 				}
 				
 			} else {
@@ -266,13 +281,17 @@ VirtualBoard.prototype.applyToHTMLBoard = function() {
 	for (var i=0; i < this.cage.length; i++) {
 		var pclass = this.cage[i]===BOARD_RED?"red captured":"blue captured";
 		$('<div class="'+pclass+'"></div>').appendTo(".cage");
-	};
+	}
+	
+	// clear caged locations
+	this.caged_locations = [];
 }
 
 VirtualBoard.prototype.copyFromBoard = function(source_board) 
 {
 	this.board = JSON.parse(JSON.stringify(source_board.getBoard()));
 	this.cage = JSON.parse(JSON.stringify(source_board.getCage()));
+	this.caged_locations = JSON.parse(JSON.stringify(source_board.getCagedLocations()));
 }
 VirtualBoard.prototype.movePiece = function(piece, empty_block, turn) 
 {
@@ -304,6 +323,7 @@ VirtualBoard.prototype.moveTrapped = function(piece_block, type)
 {
 	this.board[piece_block[0]][piece_block[1]] = BOARD_EMPTY;
 	this.cage.push(type);
+	this.caged_locations.push(piece_block);
 	this.last_move_score += (type===BOARD_RED)?this.move_score_trap_red:this.move_score_trap_blue;
 }
 VirtualBoard.prototype.getPiecesInDanger = function(type) 

@@ -13,3 +13,4 @@
 * Game ends when both players played same number of moves or when both players have no more free pieces 
 * A player wins when all their pieces are captured and their frozen and active are more than the opponent frozen pieces
 * A player also wins when all their pieces are frozen and are more than the opponent frozen pieces, even if the opponent still has free pieces
+* A player also wins if all opponent pieces are trapped (completely surrounded by opponent pieces)

@@ -13,10 +13,13 @@ function VirtualGame()
 	this.active_board;		// VirtualBoard
 	this.against_AI;		// Boolean
 	this.updates_html;		// Boolean
+	this.is_active;			// Boolean
 }
 
 VirtualGame.prototype.startNewGame = function (against_AI, updates_html) 
 {	
+	this.is_active = true;
+	
 	this.current_turn = Math.random()>.5?"red":"blue";
 	this.moves_red = 0;
 	this.moves_blue = 0;
@@ -42,7 +45,7 @@ VirtualGame.prototype.getCurrentTurn = function ()
 }
 VirtualGame.prototype.checkGameOver = function () 
 {	
-	return this.active_board.getWinner();
+	return this.active_board.getWinner(this.moves_red == this.moves_blue);
 }
 VirtualGame.prototype.switchTurn = function () 
 {
@@ -51,17 +54,41 @@ VirtualGame.prototype.switchTurn = function ()
 		HTMLInterface.updateAfterTurnSwitch();
 	}
 	
-	// TODO 
-	// check if current player is trapped 
-	// 	    if both player played the same number of moves, declare the other as winner, otherwise
+	// Rule: Trapped player loses
+	//		check if current player is trapped 
+	// 	    if both players played the same number of moves, declare
+	// 		the other as winner, otherwise
 	// 	    pass the turn to the next player
 	// 
-	// moves_red
-	// moves_blue
-	//var possible_moves_red = this.getAllMovesFromType(BOARD_RED).length;
-	//var possible_moves_blue = this.getAllMovesFromType(BOARD_BLUE).length;
+	var possible_moves_red = this.active_board.getAllMovesFromType(BOARD_RED).length;;
+	var possible_moves_blue = this.active_board.getAllMovesFromType(BOARD_BLUE).length;;
 	
+	if(this.current_turn == "red" && possible_moves_red==0)	 {
+		// RED is trapped
+		// ...let's see if the opponent can still play
+		if(this.moves_red == this.moves_blue) {
+			// RED can't do any move and loses
+			// TODO: must check board to see who won
+			this.endGame("blue");
+		} else {
+			// Pass the turn
+			this.updateAfterMove();
+		}
+	}
+	if(this.current_turn == "blue" && possible_moves_blue==0)	 {
+		// BLUE is trapped
+		// ...let's see if the opponent can still play
+		if(this.moves_red == this.moves_blue) {
+			// BLUE can't do any move and loses
+			// TODO: must check board to see who won
+			this.endGame("red");
+		} else {
+			// Pass the turn
+			this.updateAfterMove();
+		}
+	}
 	
+	// Check if AI should play
 	if(this.current_turn == "red" && this.against_AI) {
 		AI.playTurn();
 	}
@@ -72,9 +99,9 @@ VirtualGame.prototype.updateAfterMove = function ()
 	if(this.current_turn == "red") this.moves_red++;
 	if(this.current_turn == "blue") this.moves_blue++;
 	
-	var winner = ACTIVE_GAME.checkGameOver();
+	var winner = this.checkGameOver();
 	if(winner !== false) {
-		HTMLInterface.performGameOverCeremony(winner);
+		this.endGame(winner);
 	} else {
 		this.switchTurn();		
 	}
@@ -94,6 +121,11 @@ VirtualGame.prototype.commitHumanMove = function (piece, empty_block)
 	this.active_board.applyToHTMLBoard();
 
 	this.updateAfterMove();
+}
+VirtualGame.prototype.endGame = function (winner) 
+{
+	this.is_active = false;
+	if(this.updates_html) HTMLInterface.performGameOverCeremony(winner);
 }
 
 

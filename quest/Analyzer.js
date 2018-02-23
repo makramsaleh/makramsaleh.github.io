@@ -13,7 +13,7 @@ Analyzer.prototype.performBestMove = function()
 	log("HTML Board");
 	html_board.print();
 	
-	var moves = html_board.getAllMoves();
+	var moves = html_board.getAllMovesFromType(BOARD_RED);
 	
 	for (var i=0; i < moves.length; i++) {
 		var piece = moves[i][0];

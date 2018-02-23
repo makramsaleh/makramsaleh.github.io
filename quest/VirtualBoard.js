@@ -411,10 +411,12 @@ VirtualBoard.prototype.updateCoins = function()
 		if(red_adjacent>=2) {
 			this.replaceCoinWithType(coins[i], BOARD_RED);
 			this.last_move_score += this.move_score_coin_red;
+			this.updateCoins(); // recursive check to see if new converted coin converts more coins
 		}
 		if(blue_adjacent>=2) {
 			this.replaceCoinWithType(coins[i], BOARD_BLUE);
 			this.last_move_score += this.move_score_coin_blue;
+			this.updateCoins(); // recursive check to see if new converted coin converts more coins
 		}
 	}
 }

@@ -1,12 +1,12 @@
 
 /************************************************************
-	Analyzer class
+	Agent class
 	analyzes game board and decides best moves and outcomes
 */
-function Analyzer() {	
+function Agent() {	
 }
 
-Analyzer.prototype.performBestMove = function() 
+Agent.prototype.performBestMove = function() 
 {
 	var html_board = ACTIVE_GAME.getBoard();
 	

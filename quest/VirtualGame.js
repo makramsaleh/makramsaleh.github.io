@@ -90,9 +90,15 @@ VirtualGame.prototype.switchTurn = function ()
 	
 	// Check if AI should play
 	if(this.current_turn == "red" && this.against_AI) {
-		AI.playTurn();
+		this.playAITurn();
 	}
 	
+}
+
+VirtualGame.prototype.playAITurn = function () {
+	setTimeout(function() {
+		new Agent().performBestMove();
+	}, 400);
 }
 VirtualGame.prototype.updateAfterMove = function () 
 {	

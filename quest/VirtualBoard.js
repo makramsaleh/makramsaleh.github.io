@@ -45,7 +45,9 @@ VirtualBoard.prototype.initBlankBoard = function()
 	}
 	
 	this.initPlayers();
-	this.initCoins();
+	
+	/// TEMPORARY disable coins
+	//this.initCoins();
 	
 	if(this.updates_html) {
 		this.active_board.applyToHTMLBoard();
@@ -58,7 +60,10 @@ VirtualBoard.prototype.initPlayers = function()
 		case "easter":
 			// full row per player
 			// red on top, blue on bottom
-			this.board[0] = BOARD_RED.repeat(board_size).split("");
+			
+			/// TEMPORARY add only one red piece
+			this.board[0] = "8".repeat(board_size-1).split("");
+			this.board[0].unshift("1");
 			this.board[board_size-1] = BOARD_BLUE.repeat(board_size).split("");
 		break;
 		

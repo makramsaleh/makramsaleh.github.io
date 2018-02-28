@@ -25,7 +25,7 @@ function VirtualBoard() {
 	this.move_score_trap_red = -200;
 	this.move_score_coin_red = 50;
 	this.move_score_coin_blue = -50;
-	this.move_score_freeze = 200;
+	this.move_score_freeze = 300;
 	this.move_score_row_multiplier = 2;
 	this.move_score_danger = 40;
 }

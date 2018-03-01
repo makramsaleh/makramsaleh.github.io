@@ -17,7 +17,7 @@ function VirtualBoard() {
 
 	this.last_move_score = 0;
 	
-	// Score settings
+	// Board score settings
 	this.move_score_win = 1000;
 	this.move_score_lose = -1000;
 	this.move_score_tie = 0; // TODO think if tie is meaningful 
@@ -28,8 +28,78 @@ function VirtualBoard() {
 	this.move_score_freeze = 300;
 	this.move_score_row_multiplier = 2;
 	this.move_score_danger = 40;
+	
+	// Cell rewards
+	
 }
 
+//=========== REWARD SCORING ==============
+/*
+	calculateCellReward	
+	
+	`move` is an array like this:
+	[ piece, adjacent empty ]
+	where both piece and adjacent looks like this: [row, col]
+*/
+VirtualBoard.prototype.calculateCellReward = function(move) 
+{
+	log("BLOCK REWARD");
+	
+	var reward = 0;
+	var piece = move[0];
+	var next = move[1];
+	
+	var graph = this.toGraph();
+	//console.log(graph.toString());
+	var start = graph.grid[piece[0]][piece[1]];
+	
+	// 1) Check if 'next' is on the path towards nearest goal block (goal is end row)
+	var empty_goal_blocks = [];
+	for(var c=0; c<board_size; c++) {
+		if(this.board[board_size-1][c] === BOARD_EMPTY) {
+			empty_goal_blocks.push([board_size-1, c]);
+		}
+	}
+	
+	for (var i=0; i < empty_goal_blocks.length; i++) {
+		// result is an array containing the shortest A* path
+		var end = graph.grid[empty_goal_blocks[i][0]][empty_goal_blocks[i][1]];
+		console.log("start >> end "+ start.toString() + " >> "+ end.toString());
+		var result = astar.search(graph, start, end);
+		console.log(result.toString());
+		var step_reward_increment = 1/result.length;
+		for (var t=0; t < result.length; t++) {
+			var step = result[t];
+			if(step.x == next[0] && step.y == next[1]) {
+				// next block is on the path
+				var step_reward = (t+1)*step_reward_increment; // less reward the further it is from goal
+				if(reward < step_reward) reward = step_reward;
+				console.log("rewarded: "+reward);
+			}
+		}
+	}
+	
+	return reward;
+}
+VirtualBoard.prototype.toGraph = function() 
+{
+	// https://github.com/bgrins/javascript-astar
+	
+	// 0 is wall
+	// 1 is open
+	var graph_array = [];
+	
+	for (var r=0; r < board_size; r++) {
+		graph_array[r] = [];
+		for (var c=0; c < board_size; c++) {
+			graph_array[r][c] = this.board[r][c]==BOARD_EMPTY?1:0;
+		}
+	}
+	
+	return new Graph(graph_array, { diagonal: false });
+}
+
+//=========================================
 
 VirtualBoard.prototype.initBlankBoard = function() 
 {
@@ -62,9 +132,11 @@ VirtualBoard.prototype.initPlayers = function()
 			// red on top, blue on bottom
 			
 			/// TEMPORARY add only one red piece
-			this.board[0] = "8".repeat(board_size-1).split("");
-			this.board[0].unshift("1");
-			this.board[board_size-1] = BOARD_BLUE.repeat(board_size).split("");
+			this.board[0] = BOARD_EMPTY.repeat(board_size-1).split("");
+			this.board[0].unshift(BOARD_RED);
+			this.board[board_size-1] = BOARD_EMPTY.repeat(board_size-2).split("");
+			this.board[board_size-1].unshift(BOARD_BLUE);
+			this.board[board_size-1].unshift(BOARD_BLUE);
 		break;
 		
 		case "diamond":
@@ -512,6 +584,11 @@ VirtualBoard.prototype.getWinner = function(players_played_equal_turns)
 	// rule: red wins also if all pieces of red are frozen and are more than blue frozen pieces, even if 
 	//       blue still has unfrozen pieces
 		
+	// TODO
+	// rule: winner is declared when all the end row is filled with frozen 
+	//		 player pieces. This might happen even when any/both players 
+	//		 can still play		
+		
 	// Do nothing if both players still have free (unfrozen and untrapped) pieces
 	if(possible_red_moves>0 && possible_blue_moves>0) {
 		return false;
@@ -541,6 +618,6 @@ VirtualBoard.prototype.getWinner = function(players_played_equal_turns)
 	if(  (!pieces_red && (frozen_blue+pieces_blue > frozen_red)) || (!pieces_blue && frozen_blue>frozen_red)  ) {
 		return "blue";
 	}
-	
+		
 	return false;
 }

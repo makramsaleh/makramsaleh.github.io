@@ -1,4 +1,4 @@
-var board_size = 8;
+var board_size = 4;
 var self = this;
 
 var sound_enabled = true;
@@ -27,6 +27,26 @@ var BOARD_BLUE =  		"2";
 var BOARD_COIN = 		"3";
 var BOARD_FIXED_RED = 	"4";
 var BOARD_FIXED_BLUE = 	"5";
+
+/*
+function test() 
+{
+	var graph = new Graph([
+		[0,1,1,1],
+		[1,1,1,1],
+		[0,1,1,1],
+		[1,0,1,1]
+	]);
+	var start = graph.grid[0][0];
+	var end = graph.grid[3][0];
+	var result = astar.search(graph, start, end);
+	
+	console.log(graph.toString());
+	console.log(start);
+	console.log(end);
+	console.log(result.toString());
+	console.log(result);
+}*/
 
 
 var HTMLInterface = {

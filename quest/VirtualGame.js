@@ -21,7 +21,9 @@ VirtualGame.prototype.startNewGame = function (against_AI)
 {	
 	this.is_active = true;
 	
-	this.current_turn = Math.random()>.5?"red":"blue";
+	// TEMPORARY
+	this.current_turn = "red";
+	//this.current_turn = Math.random()>.5?"red":"blue";
 	this.moves_red = 0;
 	this.moves_blue = 0;
 	this.against_AI = against_AI;
@@ -50,6 +52,7 @@ VirtualGame.prototype.checkGameOver = function ()
 VirtualGame.prototype.switchTurn = function () 
 {
 	this.current_turn = this.current_turn=="blue"?"red":"blue";
+	
 	if(this.updates_html) {
 		HTMLInterface.updateAfterTurnSwitch();
 	}

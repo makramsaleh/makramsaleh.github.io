@@ -3,7 +3,8 @@
 	Agent class
 	analyzes game board and decides best moves and outcomes
 */
-function Agent() {	
+function Agent() {
+	
 }
 
 Agent.prototype.performBestMove = function() 
@@ -22,6 +23,9 @@ Agent.prototype.performBestMove = function()
 		log(piece);
 		log(empty_block);
 		
+		var reward = html_board.calculateCellReward(moves[i]);
+		console.log("reward: "+reward);
+		
 		var move_board = new VirtualBoard();
 		move_board.copyFromBoard(html_board);
 		move_board.movePiece(piece, empty_block, ACTIVE_GAME.getCurrentTurn());
@@ -29,7 +33,10 @@ Agent.prototype.performBestMove = function()
 		moves[i][3] = move_board;
 		log("OPTION:");
 		move_board.print();
+		log("--------------------------------------------------");
 	};
+	
+	console.log(moves);
 	
 	// Sort moves by score
 	moves.sort(scoreCompare).reverse();
@@ -49,6 +56,11 @@ Agent.prototype.performBestMove = function()
 	log("score: "+best_moves[0][2]);
 	move_board.print();
 	ACTIVE_GAME.commitAIMove(best_moves[0][3]);
+}
+
+Agent.prototype.performBestMove2 = function() 
+{
+	
 }
 
 function scoreCompare(a, b) {

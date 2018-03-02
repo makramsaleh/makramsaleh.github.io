@@ -13,12 +13,12 @@ function VirtualBoard() {
 	this.move_score_win = 1000;
 	this.move_score_lose = -1000;
 	this.move_score_tie = 0; // TODO think if tie is meaningful 
-	this.move_score_trap_blue = 200;
-	this.move_score_trap_red = -200;
+	this.move_score_trap_blue = 300;
+	this.move_score_trap_red = -500;
 	this.move_score_coin_red = 50;
 	this.move_score_coin_blue = -50;
 	this.move_score_freeze = 300;
-	this.move_score_danger = 40;
+	this.move_score_danger = 150;
 	this.move_score_on_path_to_goal_multiplier = 200;
 }
 
@@ -53,12 +53,8 @@ VirtualBoard.prototype.initPlayers = function()
 			// full row per player
 			// red on top, blue on bottom
 			
-			/// TEMPORARY add only one red piece
-			this.board[0] = BOARD_EMPTY.repeat(board_size-1).split("");
-			this.board[0].unshift(BOARD_RED);
-			this.board[board_size-1] = BOARD_EMPTY.repeat(board_size-2).split("");
-			this.board[board_size-1].unshift(BOARD_BLUE);
-			this.board[board_size-1].unshift(BOARD_BLUE);
+			this.board[0] = BOARD_RED.repeat(board_size).split("");
+			this.board[board_size-1] = BOARD_BLUE.repeat(board_size).split("");
 		break;
 		
 		case "diamond":

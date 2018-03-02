@@ -6,7 +6,7 @@ var against_AI = false;
 var game_mode = "wall";
 
 var ENABLE_CONSOLE_LOG = true;
-var ENABLE_BOARD_PRINT = false;
+var ENABLE_BOARD_PRINT = true;
 
 // Easter eggs mode
 var max_eggs = 8;

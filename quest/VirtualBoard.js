@@ -1,15 +1,7 @@
-
-/************************************************************
+/**
 	VirtualBoard class
-	
-	// empty: 		8
-	// red: 		1
-	// blue: 		2
-	// coin: 		3
-	// fixed-red: 	4
-	// fixed-blue: 	5
-	
 */
+
 function VirtualBoard() {
 	this.board = [];
 	this.cage = [];
@@ -26,80 +18,10 @@ function VirtualBoard() {
 	this.move_score_coin_red = 50;
 	this.move_score_coin_blue = -50;
 	this.move_score_freeze = 300;
-	this.move_score_row_multiplier = 2;
 	this.move_score_danger = 40;
-	
-	// Cell rewards
-	
+	this.move_score_on_path_to_goal_multiplier = 200;
 }
 
-//=========== REWARD SCORING ==============
-/*
-	calculateCellReward	
-	
-	`move` is an array like this:
-	[ piece, adjacent empty ]
-	where both piece and adjacent looks like this: [row, col]
-*/
-VirtualBoard.prototype.calculateCellReward = function(move) 
-{
-	log("BLOCK REWARD");
-	
-	var reward = 0;
-	var piece = move[0];
-	var next = move[1];
-	
-	var graph = this.toGraph();
-	//console.log(graph.toString());
-	var start = graph.grid[piece[0]][piece[1]];
-	
-	// 1) Check if 'next' is on the path towards nearest goal block (goal is end row)
-	var empty_goal_blocks = [];
-	for(var c=0; c<board_size; c++) {
-		if(this.board[board_size-1][c] === BOARD_EMPTY) {
-			empty_goal_blocks.push([board_size-1, c]);
-		}
-	}
-	
-	for (var i=0; i < empty_goal_blocks.length; i++) {
-		// result is an array containing the shortest A* path
-		var end = graph.grid[empty_goal_blocks[i][0]][empty_goal_blocks[i][1]];
-		console.log("start >> end "+ start.toString() + " >> "+ end.toString());
-		var result = astar.search(graph, start, end);
-		console.log(result.toString());
-		var step_reward_increment = 1/result.length;
-		for (var t=0; t < result.length; t++) {
-			var step = result[t];
-			if(step.x == next[0] && step.y == next[1]) {
-				// next block is on the path
-				var step_reward = (t+1)*step_reward_increment; // less reward the further it is from goal
-				if(reward < step_reward) reward = step_reward;
-				console.log("rewarded: "+reward);
-			}
-		}
-	}
-	
-	return reward;
-}
-VirtualBoard.prototype.toGraph = function() 
-{
-	// https://github.com/bgrins/javascript-astar
-	
-	// 0 is wall
-	// 1 is open
-	var graph_array = [];
-	
-	for (var r=0; r < board_size; r++) {
-		graph_array[r] = [];
-		for (var c=0; c < board_size; c++) {
-			graph_array[r][c] = this.board[r][c]==BOARD_EMPTY?1:0;
-		}
-	}
-	
-	return new Graph(graph_array, { diagonal: false });
-}
-
-//=========================================
 
 VirtualBoard.prototype.initBlankBoard = function() 
 {
@@ -373,17 +295,14 @@ VirtualBoard.prototype.copyFromBoard = function(source_board)
 VirtualBoard.prototype.movePiece = function(piece, empty_block, turn) 
 {
 	this.last_move_score = 0;
+
+	// Note: it's important to get the move score before committing the move so that 
+	// the graph needed for A* doesn't show the next move as a blocked cell
+	if(turn=="red") this.last_move_score += this.getBlockPathScore(piece, empty_block);
+
 	var piece_value = this.board[piece[0]][piece[1]];
 	this.board[empty_block[0]][empty_block[1]] = piece_value;
 	this.board[piece[0]][piece[1]] = BOARD_EMPTY;
-	
-	// favor pieces moving forward towards end line
-	if(empty_block[0] > piece[0]) {
-		this.last_move_score += empty_block[0]*this.move_score_row_multiplier*this.move_score_row_multiplier;
-	}
-	if(empty_block[0] == piece[0]) {
-		this.last_move_score += empty_block[0]*this.move_score_row_multiplier
-	}
 	
 	this.updateAfterMove(turn);
 }
@@ -546,18 +465,56 @@ VirtualBoard.prototype.getIntersection = function(pieces_array_a, pieces_array_b
 	return intersection;
 }
 
-
-VirtualBoard.prototype.print = function() 
-{
-	if(!ENABLE_BOARD_PRINT) return;
-	var str = "";
-	for (var i=0; i < this.board.length; i++) {
-		str += (this.board[i].join(" | "));
-		str += ("\n"+"----".repeat(board_size)+"\n");
-	};
-	log(str);
+VirtualBoard.prototype.getBlockPathScore = function(piece, next) 
+{	
+	var reward = 0;
+	
+	var graph = this.toGraph();
+	//console.log(graph.toString());
+	var start = graph.grid[piece[0]][piece[1]];
+	
+	// Check if 'next' is on the path towards nearest goal block (goal is end row)
+	var empty_goal_blocks = [];
+	for(var c=0; c<board_size; c++) {
+		if(this.board[board_size-1][c] === BOARD_EMPTY) {
+			empty_goal_blocks.push([board_size-1, c]);
+		}
+	}
+	
+	for (var i=0; i < empty_goal_blocks.length; i++) {
+		// result is an array containing the shortest A* path
+		var end = graph.grid[empty_goal_blocks[i][0]][empty_goal_blocks[i][1]];
+		console.log("start >> end "+ start.toString() + " >> "+ end.toString());
+		var result = astar.search(graph, start, end);
+		console.log(result.toString());
+		var step_reward_increment = 1/result.length;
+		for (var t=0; t < result.length; t++) {
+			var step = result[t];
+			if(step.x == next[0] && step.y == next[1]) {
+				// next block is on the path
+				var step_reward = (t+1)*step_reward_increment; // less reward the further it is from goal
+				if(reward < step_reward) reward = step_reward;
+				console.log("rewarded: "+reward);
+			}
+		}
+	}
+	return reward * this.move_score_on_path_to_goal_multiplier;
 }
-
+VirtualBoard.prototype.toGraph = function() 
+{
+	// https://github.com/bgrins/javascript-astar
+	// 0 is wall
+	// 1 is open
+	var graph_array = [];
+	
+	for (var r=0; r < board_size; r++) {
+		graph_array[r] = [];
+		for (var c=0; c < board_size; c++) {
+			graph_array[r][c] = this.board[r][c]==BOARD_EMPTY?1:0;
+		}
+	}
+	return new Graph(graph_array, { diagonal: false });
+}
 
 /**
 	getWinner
@@ -620,4 +577,15 @@ VirtualBoard.prototype.getWinner = function(players_played_equal_turns)
 	}
 		
 	return false;
+}
+
+VirtualBoard.prototype.print = function() 
+{
+	if(!ENABLE_BOARD_PRINT) return;
+	var str = "";
+	for (var i=0; i < this.board.length; i++) {
+		str += (this.board[i].join(" "));
+		str += ("\n");
+	};
+	log(str);
 }

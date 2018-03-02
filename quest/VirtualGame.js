@@ -120,11 +120,11 @@ VirtualGame.prototype.commitAIMove = function (best_board)
 
 	this.updateAfterMove();
 }
-VirtualGame.prototype.commitHumanMove = function (piece, empty_block) 
+VirtualGame.prototype.commitHumanMove = function (from_coords, to_coords) 
 {	
 	var moved_piece_type = (this.current_turn=="red") ? BOARD_RED : BOARD_BLUE;
 	
-	this.active_board.movePiece(piece, empty_block, this.current_turn);
+	this.active_board.movePieceByCoords(from_coords, to_coords, this.current_turn);
 	this.active_board.applyToHTMLBoard();
 
 	this.updateAfterMove();

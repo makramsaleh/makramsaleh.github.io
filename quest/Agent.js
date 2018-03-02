@@ -17,7 +17,7 @@ Agent.prototype.performBestMove = function()
 		var piece = moves[i][0];
 		var empty_block = moves[i][1];
 		log("--------- move scoring -----------");
-		log(piece.toSimpleString() + " -> "+ empty_block.toSimpleString());
+		log(piece.toString(true) + " -> "+ empty_block.toString(true));
 		
 		var move_board = new VirtualBoard();
 		move_board.copyFromBoard(html_board);

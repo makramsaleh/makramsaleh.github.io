@@ -62,3 +62,9 @@ if (!String.prototype.repeat) {
     return rpt;
   }
 }
+
+
+Array.prototype.toSimpleString = function()
+{
+	return "["+this.join(" ")+"]";
+}

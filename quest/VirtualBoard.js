@@ -295,10 +295,15 @@ VirtualBoard.prototype.copyFromBoard = function(source_board)
 VirtualBoard.prototype.movePiece = function(piece, empty_block, turn) 
 {
 	this.last_move_score = 0;
+	log("SCORE: reset");
 
 	// Note: it's important to get the move score before committing the move so that 
 	// the graph needed for A* doesn't show the next move as a blocked cell
-	if(turn=="red") this.last_move_score += this.getBlockPathScore(piece, empty_block);
+	if(turn=="red") {
+		var target_score = this.getBlockPathScore(piece, empty_block);
+		this.last_move_score += target_score;
+		log("SCORE: target +"+target_score);
+	}
 
 	var piece_value = this.board[piece[0]][piece[1]];
 	this.board[empty_block[0]][empty_block[1]] = piece_value;
@@ -314,13 +319,16 @@ VirtualBoard.prototype.freezePiece = function(piece_block, type)
 {
 	this.board[piece_block[0]][piece_block[1]] = (type===BOARD_RED ? BOARD_FIXED_RED : BOARD_FIXED_BLUE);
 	this.last_move_score += (type===BOARD_RED)?this.move_score_freeze:0;
+	if(type===BOARD_RED) log("SCORE: freeze "+this.move_score_freeze);
 }
-VirtualBoard.prototype.moveTrapped = function(piece_block, type) 
+VirtualBoard.prototype.moveCaptured = function(piece_block, type) 
 {
 	this.board[piece_block[0]][piece_block[1]] = BOARD_EMPTY;
 	this.cage.push(type);
 	this.caged_locations.push(piece_block);
-	this.last_move_score += (type===BOARD_RED)?this.move_score_trap_red:this.move_score_trap_blue;
+	var score_gain = (type===BOARD_RED)?this.move_score_trap_red:this.move_score_trap_blue;
+	this.last_move_score += score_gain;
+	log("SCORE: trap "+score_gain);
 }
 VirtualBoard.prototype.getPiecesInDanger = function(type) 
 {
@@ -355,13 +363,11 @@ VirtualBoard.prototype.getPiecesInDanger = function(type)
 			}
 		}
 		if(has_empty_adjacent_intersections) {
-			log("DANGER PP: "+type+" ---> "+pieces[i][0]+" - "+pieces[i][1]);
+			//log("DANGER PP: "+type+" ---> "+pieces[i][0]+" - "+pieces[i][1]);
 			danger_score += this.move_score_danger;
 		}
 	}
-	
-	log("DANGER: "+type+" ---> "+danger_score);
-	
+	//log("DANGER: "+type+" ---> "+danger_score);
 	return danger_score;
 }
 
@@ -387,13 +393,28 @@ VirtualBoard.prototype.updateAfterMove = function(turn)
 	// rule: player with most pieces on the board wins
 	this.updateFreeze();
 	
-	this.last_move_score -= this.getPiecesInDanger(BOARD_RED);
-	this.last_move_score += this.getPiecesInDanger(BOARD_BLUE);
+	var red_in_danger_score_loss = this.getPiecesInDanger(BOARD_RED);
+	this.last_move_score -= red_in_danger_score_loss;
+	var blue_in_danger_score_gain = this.getPiecesInDanger(BOARD_BLUE);
+	this.last_move_score += blue_in_danger_score_gain
+	
+	log("SCORE: danger red  -"+red_in_danger_score_loss);
+	log("SCORE: danger blue +"+blue_in_danger_score_gain);
+	
 	
 	var winner = this.getWinner();
-	if(winner === "blue") this.last_move_score += this.move_score_lose;
-	if(winner === "red") this.last_move_score += this.move_score_win;
-	if(winner === "tie") this.last_move_score += this.move_score_tie;
+	if(winner === "blue") {
+		this.last_move_score += this.move_score_lose;
+		log("SCORE: win blue "+this.move_score_lose);
+	}
+	if(winner === "red") {
+		this.last_move_score += this.move_score_win;	
+		log("SCORE: win red  "+this.move_score_win);
+	} 
+	if(winner === "tie") {
+		this.last_move_score += this.move_score_tie;
+		log("SCORE: win tie  "+this.move_score_tie);
+	}
 }
 
 VirtualBoard.prototype.updateFreeze = function() 
@@ -427,11 +448,13 @@ VirtualBoard.prototype.updateCoins = function()
 		if(red_adjacent>=2) {
 			this.replaceCoinWithType(coins[i], BOARD_RED);
 			this.last_move_score += this.move_score_coin_red;
+			log("SCORE: coin red "+ this.move_score_coin_red);
 			this.updateCoins(); // recursive check to see if new converted coin converts more coins
 		}
 		if(blue_adjacent>=2) {
 			this.replaceCoinWithType(coins[i], BOARD_BLUE);
 			this.last_move_score += this.move_score_coin_blue;
+			log("SCORE: coin blue "+ this.move_score_coin_blue);
 			this.updateCoins(); // recursive check to see if new converted coin converts more coins
 		}
 	}
@@ -447,7 +470,7 @@ VirtualBoard.prototype.checkCaptured = function(type)
 			if(this.board[adjacents[k][0]][adjacents[k][1]] === opponent_type) opponent_adjacent++;
 		}
 		if(opponent_adjacent >= 2) { 
-			this.moveTrapped(pieces[i], type);
+			this.moveCaptured(pieces[i], type);
 		}
 	}
 }
@@ -484,9 +507,9 @@ VirtualBoard.prototype.getBlockPathScore = function(piece, next)
 	for (var i=0; i < empty_goal_blocks.length; i++) {
 		// result is an array containing the shortest A* path
 		var end = graph.grid[empty_goal_blocks[i][0]][empty_goal_blocks[i][1]];
-		console.log("start >> end "+ start.toString() + " >> "+ end.toString());
+		//console.log("start >> end "+ start.toString() + " >> "+ end.toString());
 		var result = astar.search(graph, start, end);
-		console.log(result.toString());
+		//console.log(result.toString());
 		var step_reward_increment = 1/result.length;
 		for (var t=0; t < result.length; t++) {
 			var step = result[t];
@@ -494,7 +517,7 @@ VirtualBoard.prototype.getBlockPathScore = function(piece, next)
 				// next block is on the path
 				var step_reward = (t+1)*step_reward_increment; // less reward the further it is from goal
 				if(reward < step_reward) reward = step_reward;
-				console.log("rewarded: "+reward);
+				//console.log("rewarded: "+reward);
 			}
 		}
 	}

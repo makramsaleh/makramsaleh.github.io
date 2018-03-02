@@ -16,18 +16,17 @@ Agent.prototype.performBestMove = function()
 	for (var i=0; i < moves.length; i++) {
 		var piece = moves[i][0];
 		var empty_block = moves[i][1];
-		log("form - to:");
-		log(piece);
-		log(empty_block);
+		log("--------- move scoring -----------");
+		log(piece.toSimpleString() + " -> "+ empty_block.toSimpleString());
 		
 		var move_board = new VirtualBoard();
 		move_board.copyFromBoard(html_board);
 		move_board.movePiece(piece, empty_block, ACTIVE_GAME.getCurrentTurn());
 		moves[i][2] = move_board.getLastMoveScore();
 		moves[i][3] = move_board;
-		log("OPTION: (score "+moves[i][2]+")");
+		log("TOTAL move score "+moves[i][2]);
 		move_board.print();
-		log("--------------------------------------------------");
+		log("----------------------------------");
 	};
 	
 	console.log(moves);
@@ -46,8 +45,7 @@ Agent.prototype.performBestMove = function()
 	shuffle(best_moves);
 	
 	// Update HTML board 
-	log("BEST MOVE:");
-	log("score: "+best_moves[0][2]);
+	log("BEST MOVE: "+"(score: "+best_moves[0][2]+")");
 	move_board.print();
 	ACTIVE_GAME.commitAIMove(best_moves[0][3]);
 }

@@ -113,9 +113,10 @@ VirtualGame.prototype.updateAfterMove = function ()
 		this.switchTurn();		
 	}
 }
-VirtualGame.prototype.commitAIMove = function (best_board) 
+VirtualGame.prototype.commitAIMove = function (fromNode, toNode) 
 {
-	this.active_board.copyFromBoard(best_board);
+	this.active_board.movePiece(fromNode, toNode, this.current_turn);
+	this.active_board.getGrid().resetRewards();
 	if(this.updates_html) this.active_board.applyToHTMLBoard();
 
 	this.updateAfterMove();

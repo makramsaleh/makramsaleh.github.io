@@ -61,6 +61,23 @@ Grid.prototype = {
 		}
 		return str;
 	},
+	printNodeRewards: function() {
+		var str = "";
+		for (var r=0; r < this.height; r++) {
+			for (var c=0; c < this.width; c++) {
+				str += this.getNodeAt(r,c).rewardToString()+"  ";
+			}
+			str+="\n\n";
+		}
+		return str;
+	},
+	resetRewards: function(){
+		for (var r=0; r < this.height; r++) {
+			for (var c=0; c < this.width; c++) {
+				this.getNodeAt(r,c).forceReward(0);
+			}
+		}
+	},
 	getNodeAt: function(row, col) {
 		return this.grid[row][col];
 	},
@@ -92,7 +109,7 @@ Grid.prototype = {
 }
 
 
-/**
+/****************************************************************************************
 	Node in the grid
 */
 function GridNode(kind) 
@@ -101,6 +118,7 @@ function GridNode(kind)
 	this.row;
 	this.col;
 	this.grid;
+	this.reward = 0;
 }
 GridNode.prototype = {
 	
@@ -133,8 +151,22 @@ GridNode.prototype = {
 		if(verbose) return "Node ("+this.kind+") at ["+this.row+" "+this.col+"]";
 		else return this.kind.toString();
 	},
-	toKindString: function() {
-		return this.kind;
+	getReward: function() {
+		return this.reward;
+	},
+	forceReward: function(reward) {
+		this.reward = reward;
+	},
+	addReward: function(increment) {
+		this.reward += increment;	
+		this.reward = Math.round(this.reward*1000) / 1000; // Round to 3 decimal places
+	},
+	rewardToString: function() {
+		var rs = this.reward+"";
+		if(rs.length < 5) {
+			rs += (" ".repeat(5-rs.length));
+		}
+		return rs;
 	},
 	copy: function() {
 		var new_node = new GridNode(this.kind);

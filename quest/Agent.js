@@ -4,56 +4,43 @@
 */
 function Agent() {}
 
-Agent.prototype.performBestMove = function() 
+Agent.prototype.performBestMove = function()
 {
 	var html_board = ACTIVE_GAME.getBoard();
-	
-	log("HTML Board");
-	html_board.print();
-	
 	var moves = html_board.getAllMovesFromType(BOARD_RED);
 	
 	for (var i=0; i < moves.length; i++) {
-		var piece = moves[i][0];
-		var empty_block = moves[i][1];
-		log("--------- move scoring -----------");
-		log(piece.toString(true) + " -> "+ empty_block.toString(true));
-		
-		var move_board = new VirtualBoard();
-		move_board.copyFromBoard(html_board);
-		move_board.movePiece(piece, empty_block, ACTIVE_GAME.getCurrentTurn());
-		moves[i][2] = move_board.getLastMoveScore();
-		moves[i][3] = move_board;
-		log("TOTAL move score "+moves[i][2]);
-		move_board.print();
-		log("----------------------------------");
-	};
+		moves[i][1].addReward(Math.random());
+	}
 	
-	console.log(moves);
+	console.log(html_board.getGrid().printNodeRewards());
 	
 	// Sort moves by score
-	moves.sort(scoreCompare).reverse();
+	moves.sort(rewardCompare).reverse();
 	
-	// If more than one move have the same score, pick a random move from those
+	// If more than one move have the same reward, 
+	// pick a random move from those
 	var best_moves = [];
-	var best_score = moves[0][2];
+	var best_score = moves[0][1].getReward();
 	for (var i=0; i < moves.length; i++) {
-		if(Math.abs(moves[i][2] - best_score) < 8) {
+		if(Math.abs(moves[i][1].getReward() - best_score) < 0.008) {
 			best_moves.push(moves[i]);
 		}
 	}
 	shuffle(best_moves);
 	
-	// Update HTML board 
-	log("BEST MOVE: "+"(score: "+best_moves[0][2]+")");
-	move_board.print();
-	ACTIVE_GAME.commitAIMove(best_moves[0][3]);
+	console.log(">>> BEST REWARD: ");
+	console.log(best_moves[0]);
+	
+	ACTIVE_GAME.commitAIMove(best_moves[0][0], best_moves[0][1]);
 }
-function scoreCompare(a, b) {
-    if (a[2] === b[2]) {
+
+function rewardCompare(a, b) {
+    if (a[1].getReward() === b[1].getReward()) {
         return 0;
     } else {
-        return (a[2] < b[2]) ? -1 : 1;
+        return (a[1].getReward() < b[1].getReward()) ? -1 : 1;
     }
 }
+
 

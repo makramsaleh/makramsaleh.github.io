@@ -30,7 +30,8 @@ VirtualBoard.prototype.initBlankBoard = function()
 	
 	this.initPlayers();
 	
-	this.initCoins();
+	// TEMPORARY
+	//this.initCoins();
 	
 	if(this.updates_html) {
 		this.active_board.applyToHTMLBoard();
@@ -335,7 +336,7 @@ VirtualBoard.prototype.checkCaptured = function(type)
 	for (var i=0; i < pieces.length; i++) {
 		var opponent_type = (type===BOARD_RED)?BOARD_BLUE:BOARD_RED;
 		var opponent_adjacent = pieces[i].getAdjacentsOfKind(opponent_type).length;
-		if(opponent_adjacent >= 2) { 
+		if(opponent_adjacent >= 2 && !pieces[i].isAtLastRow()) {
 			this.moveCaptured(pieces[i]);
 		}
 	}
@@ -343,35 +344,29 @@ VirtualBoard.prototype.checkCaptured = function(type)
 
 
 
-VirtualBoard.prototype.getBlockPathScore = function(fromNode, toNode) 
+VirtualBoard.prototype.getPathToGoalScore = function(node) 
 {	
 	var reward = 0;
 	
 	var graph = this.toGraph();
 	//console.log(graph.toString());
-	var start = graph.grid[fromNode.row][fromNode.col];
+	var start = graph.grid[node.row][node.col];
 	
-	// Check if 'next' is on the path towards nearest goal block (goal is end row)
+	// Check if node is on the path towards nearest goal block (goal is end row)
 	var empty_goal_blocks = this.grid.getNodesOfKindAtLastRow(BOARD_EMPTY);
+	var shortest_path_length = 0;
 	
 	for (var i=0; i < empty_goal_blocks.length; i++) {
 		// result is an array containing the shortest A* path
-		var end = graph.grid[toNode.row][toNode.col];
+		var end = graph.grid[empty_goal_blocks[i].row][empty_goal_blocks[i].col];
 		//console.log("start >> end "+ start.toString() + " >> "+ end.toString());
 		var result = astar.search(graph, start, end);
 		//console.log(result.toString());
-		var step_reward_increment = 1/result.length;
-		for (var t=0; t < result.length; t++) {
-			var step = result[t];
-			if(step.x == toNode.row && step.y == toNode.col) {
-				// next block is on the path
-				var step_reward = (t+1)*step_reward_increment; // less reward the further it is from goal
-				if(reward < step_reward) reward = step_reward;
-				//console.log("rewarded: "+reward);
-			}
-		}
+		
+		// The shortest the path the better
+		if(result.length > shortest_path_length) shortest_path_length = result.length;
 	}
-	return reward * this.move_score_on_path_to_goal_multiplier;
+	return (shortest_path_length>0) ? 1/shortest_path_length : 0;
 }
 VirtualBoard.prototype.toGraph = function() 
 {
@@ -457,3 +452,44 @@ VirtualBoard.prototype.print = function()
 	if(!ENABLE_BOARD_PRINT) return;
 	log(this.grid.toString());
 }
+
+
+/***** Strategy and Rewards *****/ 
+VirtualBoard.prototype.calculateNodeReward = function(node) 
+{
+	//-------------------------------------
+	var flea_reward 		= -1;
+	var fight_reward 		= 1;
+	var clustering_reward 	= 0.2;
+	var proximity_to_goal_multiplier = 0.5;
+	//-------------------------------------
+	
+	console.log("-------- REWARD for "+node.toString(true)+" ----");
+
+	node.forceReward(0);
+	
+	// 1) Capture danger
+	if(!node.isAtLastRow()) {
+		var opponent_adjacents = node.getAdjacentsOfKind( BOARD_BLUE );
+		if(opponent_adjacents.length >= 2) node.addReward(flea_reward);		
+	}
+	
+	// 2) Capture opportunity
+	
+	// 3) Coin opportunity
+	
+	
+	// 4) Coin proximity
+	
+	// 5) Path to goal
+	var a_star_path_proximity = this.getPathToGoalScore(node);
+	node.addReward(a_star_path_proximity * proximity_to_goal_multiplier);
+	if(node.isAtLastRow()) node.addReward(proximity_to_goal_multiplier);
+	
+	// 6) Clustering 
+	
+	
+	console.log(">> TOTAL: "+node.toString(true)+ " -> "+node.getReward());
+}
+
+

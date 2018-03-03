@@ -27,6 +27,13 @@ $.arrayIntersect = function(a, b)
 	return matches;
 };
 
+function onlyUnique(value, index, self) { 
+    return self.indexOf(value) === index;
+}
+Array.prototype.uniqify = function () 
+{
+	return this.filter( onlyUnique );
+}
 
 if (!String.prototype.repeat) {
   String.prototype.repeat = function(count) {

@@ -6,11 +6,13 @@ function Agent() {}
 
 Agent.prototype.performBestMove = function()
 {
+	console.log("******************************************");
 	var html_board = ACTIVE_GAME.getBoard();
 	var moves = html_board.getAllMovesFromType(BOARD_RED);
+	var unique_next_nodes = []; // get all possible empty blocks that red can move to
 	
 	for (var i=0; i < moves.length; i++) {
-		moves[i][1].addReward(Math.random());
+		html_board.calculateNodeReward(moves[i][1]);
 	}
 	
 	console.log(html_board.getGrid().printNodeRewards());

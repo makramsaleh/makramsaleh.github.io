@@ -148,7 +148,7 @@ GridNode.prototype = {
 		return (this.kind === kind);
 	},
 	toString: function(verbose) {
-		if(verbose) return "Node ("+this.kind+") at ["+this.row+" "+this.col+"]";
+		if(verbose) return "Node ["+this.row+" "+this.col+"]("+this.kind+")";
 		else return this.kind.toString();
 	},
 	getReward: function() {

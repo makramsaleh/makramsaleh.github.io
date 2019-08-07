@@ -459,7 +459,7 @@ VirtualBoard.prototype.calculateNodeReward = function(node)
 {
 	//-------------------------------------
 	var flea_reward 		= -1;
-	var fight_reward 		= 1;
+	var fight_reward 		= 2;
 	var clustering_reward 	= 0.2;
 	var proximity_to_goal_multiplier = 0.5;
 	//-------------------------------------
@@ -468,13 +468,29 @@ VirtualBoard.prototype.calculateNodeReward = function(node)
 
 	node.forceReward(0);
 	
-	// 1) Capture danger
+	// 1a) Capture danger (direct)
 	if(!node.isAtLastRow()) {
 		var opponent_adjacents = node.getAdjacentsOfKind( BOARD_BLUE );
 		if(opponent_adjacents.length >= 2) node.addReward(flea_reward);		
 	}
+    // 1b) Capture danger (indirect)
+	if(!node.isAtLastRow()) {
+		
+	}
+    
 	
 	// 2) Capture opportunity
+    if(!node.isAtLastRow()) {
+		var opponent_adjacents = node.getAdjacentsOfKind( BOARD_BLUE );
+        // has one adjacent blue
+		if(opponent_adjacents.length == 1) {
+            //...and this blue adjacent has at least one red adjacent
+            var red_adjacents = opponent_adjacents[0].getAdjacentsOfKind( BOARD_RED );
+            if(red_adjacents == 1) {
+                node.addReward(fight_reward);
+            }
+        }
+	}
 	
 	// 3) Coin opportunity
 	
@@ -489,7 +505,7 @@ VirtualBoard.prototype.calculateNodeReward = function(node)
 	// 6) Clustering 
 	
 	
-	console.log(">> TOTAL: "+node.toString(true)+ " -> "+node.getReward());
+	//console.log(">> TOTAL: "+node.toString(true)+ " -> "+node.getReward());
 }
 
 

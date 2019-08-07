@@ -457,14 +457,17 @@ VirtualBoard.prototype.print = function()
 /***** Strategy and Rewards *****/ 
 VirtualBoard.prototype.calculateNodeReward = function(node) 
 {
-	//-------------------------------------
-	var flea_reward 		= -1;
-	var fight_reward 		= 2;
-	var clustering_reward 	= 0.2;
-	var proximity_to_goal_multiplier = 0.5;
-	//-------------------------------------
+	//---------------------------------------------~
+	var flea_reward 		            = -1;
+	var fight_reward 		            = 2;
+	var clustering_reward 	            = 0.1;
+    var clustering_multiplier           = 1.5;
+	var proximity_to_goal_multiplier    = 0.3;
+    var march_forward_reward            = 0.05
+    var march_forward_multiplier        = 1.1
+	//---------------------------------------------~
 	
-	console.log("-------- REWARD for "+node.toString(true)+" ----");
+	//console.log("-------- REWARD for "+node.toString(true)+" ----");
 
 	node.forceReward(0);
 	
@@ -503,7 +506,15 @@ VirtualBoard.prototype.calculateNodeReward = function(node)
 	if(node.isAtLastRow()) node.addReward(proximity_to_goal_multiplier);
 	
 	// 6) Clustering 
-	
+	if(!node.isAtLastRow()) {
+		var red_adjacents = node.getAdjacentsOfKind( BOARD_RED );
+        if(red_adjacents.length > 1) {
+            node.addReward(clustering_reward);
+        }
+	}
+    
+    // 7) Move forward
+    node.addReward(march_forward_reward * node.row * march_forward_multiplier);
 	
 	//console.log(">> TOTAL: "+node.toString(true)+ " -> "+node.getReward());
 }

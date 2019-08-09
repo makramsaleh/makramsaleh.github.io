@@ -79,6 +79,7 @@ Grid.prototype = {
 		}
 	},
 	getNodeAt: function(row, col) {
+        if(row > this.height-1 || row < 0 || col < 0 || col > this.width-1) return null; // out of bounds
 		return this.grid[row][col];
 	},
 	emptyNodeAt: function(row, col) {
@@ -181,14 +182,36 @@ GridNode.prototype = {
 	getAdjacents: function() {
 		var nodes = [];
 		
-		// top
-		if(!this.isAtFirstRow()) nodes.push(this.grid.getNodeAt(this.row-1, this.col));
-		// bottom 
-		if(!this.isAtLastRow()) nodes.push(this.grid.getNodeAt(this.row+1, this.col));
-		// left
-		if(!this.isAtFirstCol()) nodes.push(this.grid.getNodeAt(this.row, this.col-1));
+        // top
+        var n1 = this.grid.getNodeAt(this.row-1, this.col);
+		if(n1!==null) nodes.push(n1);
+		// bottom
+        var n2 = this.grid.getNodeAt(this.row+1, this.col);
+        if(n2!==null) nodes.push(n2);
+        // left
+        var n3 = this.grid.getNodeAt(this.row, this.col-1);
+		if(n3!==null) nodes.push(n3);
 		// right
-		if(!this.isAtLastCol()) nodes.push(this.grid.getNodeAt(this.row, this.col+1));
+        var n4 = this.grid.getNodeAt(this.row, this.col+1);
+		if(n4!==null) nodes.push(n4);
+		
+		return nodes;
+	},
+    getSurroundings: function() {
+		var nodes = this.getAdjacents();
+		
+        // top left
+        var n1 = this.grid.getNodeAt(this.row-1, this.col-1);
+		if(n1!==null) nodes.push(n1);
+		// bottom left
+        var n2 = this.grid.getNodeAt(this.row+1, this.col-1);
+        if(n2!==null) nodes.push(n2);
+        // top right
+        var n3 = this.grid.getNodeAt(this.row-1, this.col+1);
+		if(n3!==null) nodes.push(n3);
+		// bottom right
+        var n4 = this.grid.getNodeAt(this.row+1, this.col+1);
+		if(n4!==null) nodes.push(n4);
 		
 		return nodes;
 	},
@@ -202,5 +225,14 @@ GridNode.prototype = {
 			if(adjacents[i].is(kind)) nodes.push(adjacents[i]);
 		};
 		return nodes;
+	},
+    getSurroundingsOfKind: function(kind) {
+		var nodes = [];
+		var surrounding = this.getSurroundings();
+		for (var i=0; i < surrounding.length; i++) {
+			if(surrounding[i].is(kind)) nodes.push(surrounding[i]);
+		};
+		return nodes;
 	}
+
 }

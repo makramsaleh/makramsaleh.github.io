@@ -458,13 +458,14 @@ VirtualBoard.prototype.print = function()
 VirtualBoard.prototype.calculateNodeReward = function(node) 
 {
 	//---------------------------------------------~
-	var flea_reward 		            = -1;
-	var fight_reward 		            = 2;
+	var avoid_direct_danger_reward 		= -1;
+	var indirect_danger_multiplier  	= -1.1;
+	var fight_reward 		            = 3;
 	var clustering_reward 	            = 0.1;
     var clustering_multiplier           = 1.5;
-	var proximity_to_goal_multiplier    = 0.3;
-    var march_forward_reward            = 0.05
-    var march_forward_multiplier        = 1.1
+	var proximity_to_goal_multiplier    = 0.4;
+    var march_forward_reward            = 0.15;
+    var march_forward_multiplier        = 0.2;
 	//---------------------------------------------~
 	
 	//console.log("-------- REWARD for "+node.toString(true)+" ----");
@@ -474,13 +475,21 @@ VirtualBoard.prototype.calculateNodeReward = function(node)
 	// 1a) Capture danger (direct)
 	if(!node.isAtLastRow()) {
 		var opponent_adjacents = node.getAdjacentsOfKind( BOARD_BLUE );
-		if(opponent_adjacents.length >= 2) node.addReward(flea_reward);		
+		if(opponent_adjacents.length >= 2) {
+            node.addReward(avoid_direct_danger_reward);		
+        } else if (opponent_adjacents.length >= 1) {
+            // 1b) Capture danger (indirect)
+            // Get all empty adjacenets, then check if any of these has BLUE adjancet to them
+            log("danger")
+            var empty_adjacents = node.getAdjacentsOfKind( BOARD_EMPTY );
+            var potential_danger = 0;
+            for(var i=0; i<empty_adjacents.length; i++) {
+                var blue_adjacents = empty_adjacents[i].getAdjacentsOfKind( BOARD_BLUE );
+                if(blue_adjacents.length > 0) potential_danger++;
+            }
+            node.addReward(indirect_danger_multiplier * potential_danger);
+        }
 	}
-    // 1b) Capture danger (indirect)
-	if(!node.isAtLastRow()) {
-		
-	}
-    
 	
 	// 2) Capture opportunity
     if(!node.isAtLastRow()) {

@@ -115,7 +115,7 @@ Grid.prototype = {
         for(var i=0; i<starting_nodes.length; i++) {
             var grid_copy = new Grid();
             grid_copy.copyFromOtherGrid(this);
-            var dmap = new DjkstraMap(grid_copy, starting_nodes[i], start_score, step);
+            var dmap = new DijkstraMap(grid_copy, starting_nodes[i], start_score, step);
             this.incrementRewardsFromOtherGrid(grid_copy);
         }
 	},
@@ -264,27 +264,36 @@ GridNode.prototype = {
 
 //*******************************************************************
 
-function DjkstraMap(grid, start_node, start_score, step) 
+function DijkstraMap(grid, start_node, start_score, step) 
 {
 	this.grid = grid;
 	this.start_node = start_node;
 	this.start_score = start_score;
 	this.step = step;
     this.computed = [];
+    this.todo = [];
     
     this.compute();
 }
-DjkstraMap.prototype = {
+DijkstraMap.prototype = {
     compute: function () {
-        this._setNodeScore(this.start_node, this.start_score);
+        this._add(this.start_node, this.start_score);
+        while(this.todo.length > 0) {
+            var item = this.todo.shift();
+            this._setNodeScore(item.node, item.score);
+        }
+        
     },
     _setNodeScore: function (node, score) {
         if(this.computed.indexOf(node)!=-1) return;
+        this.computed.push(node);
         node.forceReward(score);
         var neighbors = node.getSurroundings();
         for (var i=0; i < neighbors.length; i++) {
-			if(neighbors[i].is(BOARD_EMPTY)) this._setNodeScore(neighbors[i], score + this.step);
+			if(neighbors[i].is(BOARD_EMPTY)) this._add(neighbors[i], score + this.step);
 		}
-        this.computed.push(node);
+    },
+    _add: function(node, score) {
+        this.todo.push({node:node, score:score});
     }
 }

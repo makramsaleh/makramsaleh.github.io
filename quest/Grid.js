@@ -106,7 +106,26 @@ Grid.prototype = {
 	},
 	getNodesOfKindAtFirstRow: function(kind) {
 		return this.getNodesOfKindAtRow(kind, 0);
-	}
+	},
+    
+    spreadRewardMap: function(starting_kind, start_score, step){
+		// Inspired by Djkstra maps
+        // http://www.roguebasin.com/index.php?title=Dijkstra_Maps_Visualized
+        var starting_nodes = this.getNodesOfKind(starting_kind);
+        for(var i=0; i<starting_nodes.length; i++) {
+            var grid_copy = new Grid();
+            grid_copy.copyFromOtherGrid(this);
+            var dmap = new DjkstraMap(grid_copy, starting_nodes[i], start_score, step);
+            this.incrementRewardsFromOtherGrid(grid_copy);
+        }
+	},
+    incrementRewardsFromOtherGrid: function(other_grid) {
+        for (var r=0; r < this.height; r++) {
+			for (var c=0; c < this.width; c++) {
+				this.getNodeAt(r,c).addReward(other_grid.getNodeAt(r,c).getReward());
+			}
+		}
+    }
 }
 
 
@@ -197,8 +216,8 @@ GridNode.prototype = {
 		
 		return nodes;
 	},
-    getSurroundings: function() {
-		var nodes = this.getAdjacents();
+    getCorners: function() {
+		var nodes = [];
 		
         // top left
         var n1 = this.grid.getNodeAt(this.row-1, this.col-1);
@@ -214,6 +233,11 @@ GridNode.prototype = {
 		if(n4!==null) nodes.push(n4);
 		
 		return nodes;
+	},
+    getSurroundings: function() {
+		var adjacents = this.getAdjacents();
+		var corners = this.getCorners();
+        return adjacents.concat(corners);
 	},
 	getEmptyAdjacents: function() {
 		return this.getAdjacentsOfKind(BOARD_EMPTY);
@@ -231,8 +255,36 @@ GridNode.prototype = {
 		var surrounding = this.getSurroundings();
 		for (var i=0; i < surrounding.length; i++) {
 			if(surrounding[i].is(kind)) nodes.push(surrounding[i]);
-		};
+		}
 		return nodes;
 	}
 
+}
+
+
+//*******************************************************************
+
+function DjkstraMap(grid, start_node, start_score, step) 
+{
+	this.grid = grid;
+	this.start_node = start_node;
+	this.start_score = start_score;
+	this.step = step;
+    this.computed = [];
+    
+    this.compute();
+}
+DjkstraMap.prototype = {
+    compute: function () {
+        this._setNodeScore(this.start_node, this.start_score);
+    },
+    _setNodeScore: function (node, score) {
+        if(this.computed.indexOf(node)!=-1) return;
+        node.forceReward(score);
+        var neighbors = node.getSurroundings();
+        for (var i=0; i < neighbors.length; i++) {
+			if(neighbors[i].is(BOARD_EMPTY)) this._setNodeScore(neighbors[i], score + this.step);
+		}
+        this.computed.push(node);
+    }
 }

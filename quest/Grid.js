@@ -111,18 +111,8 @@ Grid.prototype = {
     calculateDijkstraRewards: function(starting_nodes, start_score, step){
 		// Inspired by Djkstra maps
         // http://www.roguebasin.com/index.php?title=Dijkstra_Maps_Visualized
-        var grid_copy = new Grid();
-        grid_copy.copyFromOtherGrid(this);
-        var dmap = new DijkstraMap(grid_copy, starting_nodes, start_score, step);
-        this.incrementRewardsFromOtherGrid(dmap);
-	},
-    incrementRewardsFromOtherGrid: function(other_grid) {
-        for (var r=0; r < this.height; r++) {
-			for (var c=0; c < this.width; c++) {
-				this.getNodeAt(r,c).addReward(other_grid.getNodeAt(r,c).getReward());
-			}
-		}
-    }
+        new DijkstraMapCalculator(starting_nodes, start_score, step);
+	}
 }
 
 
@@ -176,7 +166,7 @@ GridNode.prototype = {
 	},
 	addReward: function(increment) {
 		this.reward += increment;	
-		this.reward = Math.round(this.reward*1000) / 1000; // Round to 3 decimal places
+		//this.reward = Math.round(this.reward*1000) / 1000; // Round to 3 decimal places
 	},
 	rewardToString: function() {
 		var rs = this.reward+"";
@@ -261,33 +251,31 @@ GridNode.prototype = {
 
 //*******************************************************************
 
-function DijkstraMap(grid, start_nodes, start_score, step) 
+function DijkstraMapCalculator(start_nodes, start_score, step) 
 {
-	this.grid = grid;
 	this.start_nodes = start_nodes;
 	this.start_score = start_score;
 	this.step = step;
     this.computed = [];
     this.todo = [];
     
-    return this.compute();
+    this.compute();
 }
-DijkstraMap.prototype = {
+DijkstraMapCalculator.prototype = {
     compute: function () {
         this._add(this.start_nodes, this.start_score);
         while(this.todo.length > 0) {
             var item = this.todo.shift();
             this._setNodesScore(item.nodes, item.score);
         }
-        return this.grid;
     },
     _setNodesScore: function (nodes, score) {
         for (var i=0; i < nodes.length; i++) {
             var node = nodes[i];
 			if(this.computed.indexOf(node)!=-1) continue;
             this.computed.push(node);
-            node.forceReward(score);
-		    var neighbors = node.getAdjacents();
+            node.addReward(score);
+		    var neighbors = node.getAdjacentsOfKind(BOARD_EMPTY);
             this._add(neighbors, score + this.step);
         }
     },

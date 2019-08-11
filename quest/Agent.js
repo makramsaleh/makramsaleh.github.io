@@ -19,7 +19,7 @@ Agent.prototype.performBestMove = function()
 	moves.sort(rewardCompare);
 	
 	// pick a random move from the top 3
-	var best_moves = moves.slice(0, Math.min(moves.length, 3));
+	var best_moves = moves.slice(0, 3);
 	shuffle(best_moves);
 	
 	//console.log(">>> PICKED MOVE: ");

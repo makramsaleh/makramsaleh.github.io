@@ -1,4 +1,4 @@
-var board_size = 6;
+var board_size = 8;
 var self = this;
 
 var sound_enabled = true;

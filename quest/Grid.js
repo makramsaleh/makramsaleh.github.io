@@ -166,7 +166,7 @@ GridNode.prototype = {
 	},
 	addReward: function(increment) {
 		this.reward += increment;	
-		//this.reward = Math.round(this.reward*1000) / 1000; // Round to 3 decimal places
+		this.reward = Math.round(this.reward*1000) / 1000; // Round to 3 decimal places
 	},
 	rewardToString: function() {
 		var rs = this.reward+"";

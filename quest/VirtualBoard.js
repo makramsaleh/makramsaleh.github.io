@@ -30,8 +30,7 @@ VirtualBoard.prototype.initBlankBoard = function()
 	
 	this.initPlayers();
 	
-	// TEMPORARY
-	//this.initCoins();
+	this.initCoins();
 	
 	if(this.updates_html) {
 		this.active_board.applyToHTMLBoard();
@@ -458,26 +457,35 @@ VirtualBoard.prototype.print = function()
 
 VirtualBoard.prototype.calculateAllRewards = function() 
 {
-    this.grid.calculateDijkstraRewards(this.grid.getNodesOfKind(BOARD_BLUE), 3, -1);
-    //this.grid.spreadRewardMap(BOARD_RED, 0, 1);
+    //this.grid.calculateDijkstraRewards(this.grid.getNodesOfKind(BOARD_BLUE), 3, -1);
+    
+    // Go toward last row
+    this.grid.calculateDijkstraRewards(this.grid.getNodesOfKindAtLastRow(BOARD_EMPTY), -8, 1);
+
+    // Cluster
+    //this.grid.calculateDijkstraRewards(this.grid.getNodesOfKind(BOARD_RED), -3, 1);
+    
+    // Coins
+    this.grid.calculateDijkstraRewards(this.grid.getNodesOfKind(BOARD_COIN), -10, 1);
+    
+    var empty_nodes = this.grid.getNodesOfKind(BOARD_EMPTY);
+    for(var i=0; i<empty_nodes.length; i++) {
+        this.calculateNodeReward(empty_nodes[i]);
+    }
+    
 }
 
 VirtualBoard.prototype.calculateNodeReward = function(node) 
 {
 	//---------------------------------------------~
-	var avoid_direct_danger_reward 		= -1;
-	var indirect_danger_multiplier  	= -1.1;
-	var fight_reward 		            = 3;
-	var clustering_reward 	            = 0.1;
-    var clustering_multiplier           = 1.5;
-	var proximity_to_goal_multiplier    = 0.4;
-    var march_forward_reward            = 0.15;
-    var march_forward_multiplier        = 0.2;
+	var avoid_direct_danger_reward 		= 10;
+	var indirect_danger_multiplier  	= 2;
+	var fight_reward 		            = -12;
 	//---------------------------------------------~
 	
 	//console.log("-------- REWARD for "+node.toString(true)+" ----");
 
-	node.forceReward(0);
+	//node.forceReward(0);
 	
 	// 1a) Capture danger (direct)
 	if(!node.isAtLastRow()) {
@@ -487,7 +495,6 @@ VirtualBoard.prototype.calculateNodeReward = function(node)
         } else if (opponent_adjacents.length >= 1) {
             // 1b) Capture danger (indirect)
             // Get all empty adjacenets, then check if any of these has BLUE adjancet to them
-            log("danger")
             var empty_adjacents = node.getAdjacentsOfKind( BOARD_EMPTY );
             var potential_danger = 0;
             for(var i=0; i<empty_adjacents.length; i++) {
@@ -510,27 +517,6 @@ VirtualBoard.prototype.calculateNodeReward = function(node)
             }
         }
 	}
-	
-	// 3) Coin opportunity
-	
-	
-	// 4) Coin proximity
-	
-	// 5) Path to goal
-	var a_star_path_proximity = this.getPathToGoalScore(node);
-	node.addReward(a_star_path_proximity * proximity_to_goal_multiplier);
-	if(node.isAtLastRow()) node.addReward(proximity_to_goal_multiplier);
-	
-	// 6) Clustering 
-	if(!node.isAtLastRow()) {
-		var red_adjacents = node.getAdjacentsOfKind( BOARD_RED );
-        if(red_adjacents.length > 1) {
-            node.addReward(clustering_reward);
-        }
-	}
-    
-    // 7) Move forward
-    node.addReward(march_forward_reward * node.row * march_forward_multiplier);
 	
 	//console.log(">> TOTAL: "+node.toString(true)+ " -> "+node.getReward());
 }

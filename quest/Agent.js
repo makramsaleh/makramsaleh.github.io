@@ -11,14 +11,12 @@ Agent.prototype.performBestMove = function()
 	var moves = html_board.getAllMovesFromType(BOARD_RED);
 	var unique_next_nodes = []; // get all possible empty blocks that red can move to
 	
-	for (var i=0; i < moves.length; i++) {
-		html_board.calculateNodeReward(moves[i][1]);
-	}
+    html_board.calculateAllRewards();
 	
 	console.log(html_board.getGrid().printNodeRewards());
 	
-	// Sort moves by score
-	moves.sort(rewardCompare).reverse();
+	// Sort moves by score to move to positions with lowest score
+	moves.sort(rewardCompare);
 	
 	// If more than one move have the same reward, 
 	// pick a random move from those

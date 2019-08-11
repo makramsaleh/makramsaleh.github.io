@@ -108,16 +108,13 @@ Grid.prototype = {
 		return this.getNodesOfKindAtRow(kind, 0);
 	},
     
-    spreadRewardMap: function(starting_kind, start_score, step){
+    calculateDijkstraRewards: function(starting_nodes, start_score, step){
 		// Inspired by Djkstra maps
         // http://www.roguebasin.com/index.php?title=Dijkstra_Maps_Visualized
-        var starting_nodes = this.getNodesOfKind(starting_kind);
-        for(var i=0; i<starting_nodes.length; i++) {
-            var grid_copy = new Grid();
-            grid_copy.copyFromOtherGrid(this);
-            var dmap = new DijkstraMap(grid_copy, starting_nodes[i], start_score, step);
-            this.incrementRewardsFromOtherGrid(grid_copy);
-        }
+        var grid_copy = new Grid();
+        grid_copy.copyFromOtherGrid(this);
+        var dmap = new DijkstraMap(grid_copy, starting_nodes, start_score, step);
+        this.incrementRewardsFromOtherGrid(dmap);
 	},
     incrementRewardsFromOtherGrid: function(other_grid) {
         for (var r=0; r < this.height; r++) {
@@ -264,36 +261,37 @@ GridNode.prototype = {
 
 //*******************************************************************
 
-function DijkstraMap(grid, start_node, start_score, step) 
+function DijkstraMap(grid, start_nodes, start_score, step) 
 {
 	this.grid = grid;
-	this.start_node = start_node;
+	this.start_nodes = start_nodes;
 	this.start_score = start_score;
 	this.step = step;
     this.computed = [];
     this.todo = [];
     
-    this.compute();
+    return this.compute();
 }
 DijkstraMap.prototype = {
     compute: function () {
-        this._add(this.start_node, this.start_score);
+        this._add(this.start_nodes, this.start_score);
         while(this.todo.length > 0) {
             var item = this.todo.shift();
-            this._setNodeScore(item.node, item.score);
+            this._setNodesScore(item.nodes, item.score);
         }
-        
+        return this.grid;
     },
-    _setNodeScore: function (node, score) {
-        if(this.computed.indexOf(node)!=-1) return;
-        this.computed.push(node);
-        node.forceReward(score);
-        var neighbors = node.getSurroundings();
-        for (var i=0; i < neighbors.length; i++) {
-			if(neighbors[i].is(BOARD_EMPTY)) this._add(neighbors[i], score + this.step);
-		}
+    _setNodesScore: function (nodes, score) {
+        for (var i=0; i < nodes.length; i++) {
+            var node = nodes[i];
+			if(this.computed.indexOf(node)!=-1) continue;
+            this.computed.push(node);
+            node.forceReward(score);
+		    var neighbors = node.getAdjacents();
+            this._add(neighbors, score + this.step);
+        }
     },
-    _add: function(node, score) {
-        this.todo.push({node:node, score:score});
+    _add: function(nodes, score) {
+        this.todo.push({nodes:nodes, score:score});
     }
 }

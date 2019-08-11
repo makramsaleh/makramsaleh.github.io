@@ -454,7 +454,14 @@ VirtualBoard.prototype.print = function()
 }
 
 
-/***** Strategy and Rewards *****/ 
+/***** Strategy and Rewards *****/
+
+VirtualBoard.prototype.calculateAllRewards = function() 
+{
+    this.grid.calculateDijkstraRewards(this.grid.getNodesOfKind(BOARD_BLUE), 3, -1);
+    //this.grid.spreadRewardMap(BOARD_RED, 0, 1);
+}
+
 VirtualBoard.prototype.calculateNodeReward = function(node) 
 {
 	//---------------------------------------------~

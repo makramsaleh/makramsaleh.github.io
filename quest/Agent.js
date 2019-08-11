@@ -18,19 +18,12 @@ Agent.prototype.performBestMove = function()
 	// Sort moves by score to move to positions with lowest score
 	moves.sort(rewardCompare);
 	
-	// If more than one move have the same reward, 
-	// pick a random move from those
-	var best_moves = [];
-	var best_score = moves[0][1].getReward();
-	for (var i=0; i < moves.length; i++) {
-		if(Math.abs(moves[i][1].getReward() - best_score) < 0.008) {
-			best_moves.push(moves[i]);
-		}
-	}
+	// pick a random move from the top 3
+	var best_moves = moves.slice(0, Math.min(moves.length, 3));
 	shuffle(best_moves);
 	
-	console.log(">>> BEST REWARD: ");
-	console.log(best_moves[0]);
+	//console.log(">>> PICKED MOVE: ");
+	//console.log(best_moves[0]);
 	
 	ACTIVE_GAME.commitAIMove(best_moves[0][0], best_moves[0][1]);
 }

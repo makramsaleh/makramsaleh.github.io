@@ -18,8 +18,15 @@ Agent.prototype.performBestMove = function()
 	// Sort moves by score to move to positions with lowest score
 	moves.sort(rewardCompare);
 	
-	// pick a random move from the top 3
-	var best_moves = moves.slice(0, 3);
+	// pick a random move from the top moves if the difference is not too big
+    var diff_threshold = 2;
+	var best_moves = [moves[0]];
+    for(var i=0; i<moves.length;i++) {
+        if(Math.abs( moves[i][1].getReward()-moves[0][1].getReward() )<diff_threshold) {
+            best_moves.push(moves[i]);
+        }
+    }
+    
 	shuffle(best_moves);
 	
 	//console.log(">>> PICKED MOVE: ");

@@ -11,15 +11,10 @@ function VirtualBoard() {
 	
 	// Board score settings
 	this.move_score_win = 1000;
-	this.move_score_lose = -1000;
 	this.move_score_tie = 0; // TODO think if tie is meaningful 
-	this.move_score_trap_blue = 300;
-	this.move_score_trap_red = -500;
-	this.move_score_coin_red = 50;
-	this.move_score_coin_blue = -50;
+	this.move_score_trap = 500;
+	this.move_score_coin = 50;
 	this.move_score_freeze = 300;
-	this.move_score_danger = 150;
-	this.move_score_on_path_to_goal_multiplier = 200;
 }
 
 
@@ -341,47 +336,6 @@ VirtualBoard.prototype.checkCaptured = function(type)
 	}
 }
 
-
-
-VirtualBoard.prototype.getPathToGoalScore = function(node) 
-{	
-	var reward = 0;
-	
-	var graph = this.toGraph();
-	//console.log(graph.toString());
-	var start = graph.grid[node.row][node.col];
-	
-	// Check if node is on the path towards nearest goal block (goal is end row)
-	var empty_goal_blocks = this.grid.getNodesOfKindAtLastRow(BOARD_EMPTY);
-	var shortest_path_length = 0;
-	
-	for (var i=0; i < empty_goal_blocks.length; i++) {
-		// result is an array containing the shortest A* path
-		var end = graph.grid[empty_goal_blocks[i].row][empty_goal_blocks[i].col];
-		//console.log("start >> end "+ start.toString() + " >> "+ end.toString());
-		var result = astar.search(graph, start, end);
-		//console.log(result.toString());
-		
-		// The shortest the path the better
-		if(result.length > shortest_path_length) shortest_path_length = result.length;
-	}
-	return (shortest_path_length>0) ? 1/shortest_path_length : 0;
-}
-VirtualBoard.prototype.toGraph = function() 
-{
-	// https://github.com/bgrins/javascript-astar
-	// 0 is wall
-	// 1 is open
-	var graph_array = [];
-	
-	for (var r=0; r < this.grid.height; r++) {
-		graph_array[r] = [];
-		for (var c=0; c < this.grid.width; c++) {
-			graph_array[r][c] = this.grid.getNodeAt(r,c).isEmpty()?1:0;
-		}
-	}
-	return new Graph(graph_array, { diagonal: false });
-}
 
 /**
 	getWinner

@@ -7,14 +7,11 @@ function VirtualBoard() {
 	this.grid;
 	this.caged_locations = [];	// keep track of trapped to remove them from html interface with animation
 
-	this.last_move_score = 0;
-	
 	// Board score settings
-	this.move_score_win = 1000;
-	this.move_score_tie = 0; // TODO think if tie is meaningful 
-	this.move_score_trap = 500;
-	this.move_score_coin = 50;
-	this.move_score_freeze = 300;
+	this.minimax_score_win = 1000;
+	this.minimax_score_tie = 0;
+	this.minimax_score_piece_value = 20; // applies for losing pieces (by capture) or gaining pieces (coin convert)
+	this.minimax_score_freeze = 300;
 }
 
 
@@ -131,10 +128,6 @@ VirtualBoard.prototype.getCage = function()
 VirtualBoard.prototype.getCagedLocations = function() 
 {
 	return this.caged_locations;
-}
-VirtualBoard.prototype.getLastMoveScore = function() 
-{
-	return this.last_move_score;
 }
 VirtualBoard.prototype.countAllFromType = function(type)
 {

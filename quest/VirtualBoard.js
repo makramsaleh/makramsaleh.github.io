@@ -10,8 +10,9 @@ function VirtualBoard() {
 	// Board score settings
 	this.minimax_score_win = 1000;
 	this.minimax_score_tie = 0;
-	this.minimax_score_piece_value = 20; // applies for losing pieces (by capture) or gaining pieces (coin convert)
+	this.minimax_score_piece = 20; // applies for losing pieces (by capture) or gaining pieces (coin convert)
 	this.minimax_score_freeze = 300;
+	this.minimax_score_free_move = 5;
 }
 
 
@@ -115,8 +116,6 @@ VirtualBoard.prototype.initCoins = function()
 		break;
 	}
 }
-
-
 VirtualBoard.prototype.getGrid = function() 
 {
 	return this.grid;
@@ -159,6 +158,10 @@ VirtualBoard.prototype.getAllMovesFromType = function(type)
 	}
 	
 	return moves;
+}
+VirtualBoard.prototype.countAllMovesFromType = function(type)
+{
+	return this.getAllMovesFromType(type).length;
 }
 
 VirtualBoard.prototype.applyToHTMLBoard = function() {
@@ -420,6 +423,7 @@ VirtualBoard.prototype.calculateAllRewards = function()
         this.calculateNodeReward(empty_nodes[i]);
     }
     
+	log("MINIMAX: "+ this.calculateMinimaxScore());
 }
 
 VirtualBoard.prototype.calculateNodeReward = function(node) 
@@ -468,4 +472,13 @@ VirtualBoard.prototype.calculateNodeReward = function(node)
 	//console.log(">> TOTAL: "+node.toString(true)+ " -> "+node.getReward());
 }
 
+VirtualBoard.prototype.calculateMinimaxScore = function()
+{
+	var score = 0;
+	score += (this.countAllFromType(BOARD_RED) - this.countAllFromType(BOARD_BLUE)) * this.minimax_score_piece;
+	score += (this.countAllFromType(BOARD_FIXED_RED) - this.countAllFromType(BOARD_FIXED_BLUE)) * this.minimax_score_freeze;
+	score += (this.countAllMovesFromType(BOARD_RED) - this.countAllMovesFromType(BOARD_BLUE)) * this.minimax_score_free_move;
+	// TODO count winning and losing
+	return score;
+}
 

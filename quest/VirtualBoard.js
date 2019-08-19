@@ -12,7 +12,7 @@ function VirtualBoard() {
 	this.minimax_score_tie = 0;
 	this.minimax_score_piece = 20; // applies for losing pieces (by capture) or gaining pieces (coin convert)
 	this.minimax_score_freeze = 300;
-	this.minimax_score_free_move = 5;
+	this.minimax_score_free_move = 3;
 }
 
 
@@ -244,7 +244,7 @@ VirtualBoard.prototype.copyFromBoard = function(source_board)
 
 VirtualBoard.prototype.movePieceByCoords = function(fromCoords, toCoords, turn) 
 {
-	this.movePiece(this.grid.getNodeAt(fromCoords[0], fromCoords[1]), this.grid.getNodeAt(toCoords[0], toCoords[1]));	
+	this.movePiece(this.grid.getNodeAt(fromCoords[0], fromCoords[1]), this.grid.getNodeAt(toCoords[0], toCoords[1]), turn);	
 }
 VirtualBoard.prototype.movePiece = function(fromNode, toNode, turn) 
 {
@@ -422,8 +422,6 @@ VirtualBoard.prototype.calculateAllRewards = function()
     for(var i=0; i<empty_nodes.length; i++) {
         this.calculateNodeReward(empty_nodes[i]);
     }
-    
-	log("MINIMAX: "+ this.calculateMinimaxScore());
 }
 
 VirtualBoard.prototype.calculateNodeReward = function(node) 

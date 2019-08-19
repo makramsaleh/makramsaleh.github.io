@@ -130,7 +130,7 @@ VirtualGame.prototype.commitHumanMove = function (from_coords, to_coords)
 
 	this.updateAfterMove();
 }
-VirtualGame.prototype.endGame = function (winner) 
+VirtualGame.prototype.endGame = function (winner)
 {
 	this.is_active = false;
 	if(this.updates_html) HTMLInterface.performGameOverCeremony(winner);

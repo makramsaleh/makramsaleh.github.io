@@ -28,6 +28,13 @@ var BOARD_COIN = 		"3";
 var BOARD_FIXED_RED = 	"4";
 var BOARD_FIXED_BLUE = 	"5";
 
+var TURN_RED = "red";
+var TURN_BLUE = "blue";
+
+// Minimax settings
+var MINIMAX_MAX_DEPTH = 3;
+var GLOBAL_MOVES = 0;
+
 /*
 function test() 
 {

@@ -13,6 +13,7 @@ function VirtualBoard() {
 	this.minimax_score_piece = 20; // applies for losing pieces (by capture) or gaining pieces (coin convert)
 	this.minimax_score_freeze = 300;
 	this.minimax_score_free_move = 3;
+	this.minimax_score_nearness_to_coin = 10;
 }
 
 
@@ -476,6 +477,10 @@ VirtualBoard.prototype.calculateMinimaxScore = function()
 	score += (this.countAllFromType(BOARD_RED) - this.countAllFromType(BOARD_BLUE)) * this.minimax_score_piece;
 	score += (this.countAllFromType(BOARD_FIXED_RED) - this.countAllFromType(BOARD_FIXED_BLUE)) * this.minimax_score_freeze;
 	score += (this.countAllMovesFromType(BOARD_RED) - this.countAllMovesFromType(BOARD_BLUE)) * this.minimax_score_free_move;
+	// Nearness to coins
+	var reds_near_coins = this.grid.getNodesOfKindAdjacentToOtherKind(BOARD_RED, BOARD_COIN);
+	score += reds_near_coins.length * this.minimax_score_nearness_to_coin;
+	
 	// TODO count winning and losing
 	return score;
 }

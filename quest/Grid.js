@@ -94,6 +94,16 @@ Grid.prototype = {
 		}
 		return nodes;
 	},
+	getNodesOfKindAdjacentToOtherKind: function(kind, other_kind) {
+		// For example to get all red pieces that are 
+		// adjacent to coins: getNodesOfKindAdjacentToOtherKind(red, coin)
+		var nodes_of_other_kind = this.getNodesOfKind(other_kind);
+		var nodes = [];
+		for (var i=0; i < nodes_of_other_kind.length; i++) {
+			nodes = nodes.concat(nodes_of_other_kind[i].getAdjacentsOfKind(kind));
+		}
+		return nodes;
+	},
 	getNodesOfKindAtRow: function(kind, row) {
 		var nodes = [];
 		for (var c=0; c < this.width; c++) {				

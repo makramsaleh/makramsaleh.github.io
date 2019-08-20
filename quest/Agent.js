@@ -148,6 +148,9 @@ VirtualMove.prototype.setMinimaxScoreSum = function()
  		this.children.sort(scoreCompare);
 		if(this.turn == TURN_BLUE) this.children.reverse();
 		this.minimax_score += this.children[0].minimax_score;
+		
+		this.children = null; 	// Free up memory
+		this.board = null;		//
 	}
 }
 			

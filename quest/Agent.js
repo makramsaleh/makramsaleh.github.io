@@ -44,14 +44,29 @@ Agent.prototype.performMinimaxMove = function()
 	console.log("******************** MINIMAX");
 	var start_time = new Date().getTime();
 	GLOBAL_MOVES = 0;
+	
 	var top_board = ACTIVE_GAME.getBoard();
 	var moves = this.performMinimaxRound(null, top_board, ACTIVE_GAME.getCurrentTurn(), 1);
 	this.performMinimaxSumScore(moves);
 	moves.sort(scoreCompare);
 	moves.reverse();
+	
+	// Pick a random moves from the moves with very similar score
+	var acceptable_diff = 5;
+	var similar_moves = [];
+	similar_moves.push(moves[0]);
+	for(var i=1; i<moves.length;i++) {
+        if(Math.abs(moves[i].minimax_score - similar_moves[similar_moves.length-1].minimax_score) < acceptable_diff) {
+			similar_moves.push(moves[i]);
+		}
+    }
+	shuffle(similar_moves);
+	
 	var end_time = new Date().getTime()-start_time;
+	
 	log("Moves: "+GLOBAL_MOVES+"  in: "+end_time+" ms");
-	ACTIVE_GAME.commitAIMove(moves[0].from_node, moves[0].to_node);
+	log(moves);
+	ACTIVE_GAME.commitAIMove(similar_moves[0].from_node, similar_moves[0].to_node);
 }
 
 Agent.prototype.performMinimaxSumScore = function(moves)

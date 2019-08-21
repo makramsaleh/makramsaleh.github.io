@@ -102,7 +102,7 @@ VirtualBoard.prototype.initCoins = function()
 		
 		case "diamond":
 			// TODO make this dynamic (now it only works for 8 x 8 board)
-			var dist = "oooooooooooxxoooooxxxxooooxxxxoooooxxooooooooooo";
+			var dist = "ooxxoooxxxxooxxxxoooxxoooooo";
 			var coins_distribution = dist.split("");
 			var index = 0;
 			var curr_row = 1;
@@ -131,6 +131,8 @@ VirtualBoard.prototype.getCagedLocations = function()
 }
 VirtualBoard.prototype.countAllFromType = function(type)
 {
+	// TODO optimise by using string search in grid string instead of loops
+	// https://stackoverflow.com/questions/4009756/how-to-count-string-occurrence-in-string
 	return this.getAllFromType(type).length;
 }
 VirtualBoard.prototype.getAllFromType = function(type)

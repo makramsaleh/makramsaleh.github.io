@@ -1,4 +1,4 @@
-html, body {padding:0; margin:0; background:#000; overflow:hidden;}
+html, body {padding:0; margin:0; background:#000; overflow:hidden; position: fixed; height:100%; width:100%}
 * { color:#ffffff20; font-family: 'Share Tech Mono', monospace; line-height:1.2em; text-transform:lowercase; font-size: 20px; }
 .board { width:400px; height:400px; margin:0px auto; background:#ffffff10; border-radius:3px;  }
 .turnstrip { width:12px; border-radius:0px; height:8px; margin:12px auto; opacity:0;

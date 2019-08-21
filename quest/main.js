@@ -1,15 +1,16 @@
-var board_size = 8;
+var board_size = 6;
 var self = this;
 
 var sound_enabled = true;
 var against_AI = false;
 var game_mode = "wall";
+var game_players_mode = "1";
 
 var ENABLE_CONSOLE_LOG = true;
 var ENABLE_BOARD_PRINT = true;
 
 // Easter eggs mode
-var max_eggs = 8;
+var max_eggs = 5;
 var min_eggs = 2;
 
 var anim_speed = 150;
@@ -82,6 +83,7 @@ var HTMLInterface = {
 		$(".turnstrip").css({"opacity":0});	
 		$(".turnstrip."+current_turn).css({"opacity":1});
 		
+		$(".board").removeClass("blue").removeClass("red").addClass(current_turn);
 
 		$(".piece").draggable();
 		$(".piece").draggable("destroy");

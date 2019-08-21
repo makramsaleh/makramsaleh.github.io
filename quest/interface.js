@@ -5,28 +5,35 @@ function initInteractions()
 	});
 	
 	$("#newgame_1player").click(function() {
-		HTMLInterface.resetGame(true);
-		hidePopup();
+		game_players_mode = "1";
+		$(".player").removeClass("selected");
+		$(this).addClass("selected");
 	});
 	$("#newgame_2players").click(function() {
-		HTMLInterface.resetGame(false);
+		game_players_mode = "2";
+		$(".player").removeClass("selected");
+		$(this).addClass("selected");
+	});
+	$("#btn_gamestart").click(function() { 
+		HTMLInterface.resetGame(game_players_mode=="1"?true:false);
 		hidePopup();
 	});
+
 	
 	// Game modes
 	$("#mode_wall").click(function() {
 		game_mode = "wall";
-		$(".selected").removeClass("selected");
+		$(".mode").removeClass("selected");
 		$(this).addClass("selected");
 	});
 	$("#mode_easter").click(function() {
 		game_mode = "easter";
-		$(".selected").removeClass("selected");
+		$(".mode").removeClass("selected");
 		$(this).addClass("selected");
 	});
 	$("#mode_diamond").click(function() {
 		game_mode = "diamond";
-		$(".selected").removeClass("selected");
+		$(".mode").removeClass("selected");
 		$(this).addClass("selected");
 	});
 	
@@ -35,7 +42,7 @@ function initInteractions()
 	$("#btn_continue").click(function() { hidePopup(); });
 	
 	// Sound toggle
-	$("#btn_toggle_sound").click(function() {
+	$(".btn_toggle_sound").click(function() {
 		sound_enabled = !sound_enabled;
 		updateVolumeIcon();
 		Cookies.set("sound", sound_enabled?"yes":"no");
@@ -64,8 +71,8 @@ function showPopup(content_id)
 function updateVolumeIcon() 
 {
 	if(sound_enabled) {
-		$("#btn_toggle_sound i").text("volume_up");
+		$(".btn_toggle_sound i").text("volume_up");
 	} else {
-		$("#btn_toggle_sound i").text("volume_off");
+		$(".btn_toggle_sound i").text("volume_off");
 	}
 }

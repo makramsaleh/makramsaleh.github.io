@@ -3,13 +3,12 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-	<title>Gold Quest</title>
+	<title>MSST</title>
 	<meta name="viewport" content="width=456, user-scalable=0">
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<link rel="stylesheet" href="assets/css/styles.css" type="text/css" media="screen">
-	<link href="https://fonts.googleapis.com/css?family=Rammetto+One" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
 </head>
 
 <body>
@@ -21,45 +20,84 @@
 		
 		<!-- New game -->
 		<div class="popupcontent" id="popup_newgame">
-			<h1>New Game</h1>
-			Pick mode
-			<br class="clear" />
-			<br class="clear" />
-			<div class="buttons vertical">
-				<a href="javascript:;" id="mode_wall" class="gold selected">Great Wall</a>
-				<a href="javascript:;" id="mode_easter" class="gold">Easter eggs</a>
-				<a href="javascript:;" id="mode_diamond" class="gold">Diamond Race</a>
+			<div class="row">
+				<div class="cell">
+					<img src="assets/images/logo.png" width="16">
+				</div>
 			</div>
-			<br class="clear" />
-			<br class="clear" />
-			Pick Players
-			<br class="clear" />
-			<br class="clear" />
-			<br class="clear" />
-			<div class="buttons">
-				<a href="javascript:;" id="newgame_1player">1 player</a>
-				<a href="javascript:;" id="newgame_2players" class="red">2 players</a>
+			<div class="row">
+				<div class="cell middle">
+					<div class="buttons vertical">
+						<a href="javascript:;" id="mode_wall" class="mode toggle selected">Great Wall</a><br>
+						<a href="javascript:;" id="mode_easter" class="mode toggle">Easter Eggs</a><br>
+						<a href="javascript:;" id="mode_diamond" class="mode toggle">Diamond Race</a><br>
+					</div>
+					<br class="clear" />
+					<div class="buttons">
+						<a href="javascript:;" id="newgame_1player" class="player selected">1 player</a><br>
+						<a href="javascript:;" id="newgame_2players" class="player">2 players</a>
+					</div>
+					<br class="clear" />
+					<div class="buttons">
+						<a href="javascript:;" id="btn_gamestart"><i class="material-icons">play_arrow</i></a>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="cell">
+					<div class="buttons">
+						<a href="javascript:;" class="btn_toggle_sound"><i class="material-icons">volume_up</i></a>
+					</div>
+				</div>
 			</div>
 		</div>
 
 		<!-- Winner -->
 		<div class="popupcontent" id="popup_winner">
-			<h1>Game Over</h1>
-			<br class="clear" />
-			<div class="buttons">
-				<a href="javascript:;" id="btn_playagain">Play Again</a>
+			<div class="row">
+				<div class="cell">
+					
+				</div>
+			</div>
+			<div class="row">
+				<div class="middle cell">
+					<h1>Game Over</h1>
+				</div>
+			</div>
+			<div class="row">
+				<div class="cell">
+					<div class="buttons">
+						<a href="javascript:;" id="btn_playagain"><i class="material-icons">replay</i></a>
+					</div>
+				</div>
 			</div>
 		</div>
 		
 		<!-- Pause -->
 		<div class="popupcontent" id="popup_pause">
-			<h1>Paused</h1>
-			<br class="clear" />
-			<div class="buttons">
-				<a href="javascript:;" id="btn_continue"><i class="material-icons">play_arrow</i></a>
-				<a href="javascript:;" id="btn_toggle_sound"><i class="material-icons">volume_up</i></a>
-				<a href="javascript:;" class="red" id="btn_replay"><i class="material-icons">replay</i></a>
+			<div class="row">
+				<div class="cell">
+					<div class="buttons">
+						<a href="javascript:;" id="btn_continue"><i class="material-icons">play_arrow</i></a>
+					</div>
+					
+				</div>
 			</div>
+			<div class="row">
+				<div class="middle cell">
+					paused
+				</div>
+			</div>
+			<div class="row">
+				<div class="cell">
+					<div class="buttons">
+						
+						<a href="javascript:;" class="red" id="btn_replay"><i class="material-icons">replay</i></a>
+						<a href="javascript:;" class="btn_toggle_sound"><i class="material-icons">volume_up</i></a>
+					</div>
+				</div>
+			</div>
+			
 		</div>
 		
 	</div>
@@ -67,24 +105,33 @@
 
 
 
-<br />
 
-<div class="buttons">
-	<a href="javascript:;" id="btn_pause"><i class="material-icons">pause</i></a>
+<!-- Game -->
+<div class="popupcontainer">
+	<div class="gamearea">
+		<div class="popupcontent" id="popup_game">
+			<div class="row">
+				<div class="cell">
+					<div class="buttons">
+						<a href="javascript:;" id="btn_pause"><i class="material-icons">pause</i></a>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="cell middle">
+					<div class="turnstrip red"></div>
+					<div class="board"></div>
+					<div class="turnstrip blue"></div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="cell">
+					<div class="cage"></div>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
-<br class="clear" />
-<br class="clear" />
-
-
-<div class="turnstrip red"></div>
-<div class="board"></div>
-<div class="turnstrip blue"></div>
-
-<br />
-
-<div class="cage">
-</div>
-
 
 
 <script src="assets/js/jquery.js"></script>

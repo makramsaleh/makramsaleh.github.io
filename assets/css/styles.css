@@ -2,7 +2,9 @@ html, body {padding:0; margin:0; background:#000; overflow:hidden;}
 * { color:#ffffff20; font-family: 'Share Tech Mono', monospace; line-height:1.2em; text-transform:lowercase; font-size: 20px; }
 .board { width:400px; height:400px; margin:0px auto; background:#ffffff10; border-radius:3px;  }
 .turnstrip { width:12px; border-radius:0px; height:8px; margin:12px auto; opacity:0;
-clip-path: polygon(33% 0%, 66% 0%, 66% 50%, 100% 50%, 100% 100%, 0% 100%, 0% 50%, 33% 50%); }
+clip-path: polygon(33% 0%, 66% 0%, 66% 50%, 100% 50%, 100% 100%, 0% 100%, 0% 50%, 33% 50%); 
+-webkit-clip-path: polygon(33% 0%, 66% 0%, 66% 50%, 100% 50%, 100% 100%, 0% 100%, 0% 50%, 33% 50%); 
+}
 .turnstrip.red { background-color:#C0228A; transform: rotate(180deg); }
 .turnstrip.blue { background-color:#00D7C3; }
 .board.off { border-color:black; }
@@ -15,6 +17,7 @@ clip-path: polygon(33% 0%, 66% 0%, 66% 50%, 100% 50%, 100% 100%, 0% 100%, 0% 50%
 .block.active { background:#ffffff20; border-radius:3px; }
 .piece, .coin { 
 	clip-path: polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 30%, 15% 30%, 15% 15%, 30% 15%);
+	-webkit-clip-path: polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 30%, 15% 30%, 15% 15%, 30% 15%);
 	z-index:1000; margin:3px; border-radius:0 20px 2px 2px; position:absolute; top:0px; left:0px; 
 	width:40px; height:40px; background:#ccc; background-size:cover !important; transform: rotate(360deg); }
 .captured { width:20px; height:20px; border-radius:30px; display:inline-block; background-size:cover !important; }
@@ -23,15 +26,15 @@ clip-path: polygon(33% 0%, 66% 0%, 66% 50%, 100% 50%, 100% 100%, 0% 100%, 0% 50%
 .piece.red, .captured.red, .red-fixed { background-color:#C0228A; transform: rotate(180deg); }
 .piece.blue, .captured.blue, .blue-fixed { background-color:#00D7C3; }
 
-.red-fixed, .blue-fixed { border-radius: 3px; clip-path:none }
+.red-fixed, .blue-fixed { border-radius: 2px; -webkit-clip-path:none }
 
-.coin { width:16px; height: 16px; margin: 15px; background:url(../images/logo.png); clip-path:none; border-radius:0} 
+.coin { width:16px; height: 16px; margin: 15px; background:url(../images/logo.png); -webkit-clip-path:none; border-radius:0} 
 .reload { font-family: Lucida Sans Unicode; font-size:30px;
 	cursor:pointer; background:#eee; position:relative; 
 	width:40px; text-align:center; border-radius:10px; margin:0 auto; }
 
 
-.dim { background:#333; opacity:1; position:absolute; width:100%; height:100%; z-index:4000; }
+.dim { background:#000; opacity:1; position:absolute; width:100%; height:100%; z-index:4000; }
 .popupcontainer { position:absolute; left:50%; top:50% }
 .popup, .gamearea { left:-187px; top:-350px; width:374px; height:700px; background:#000; position:absolute;  }
 .popup { display:none; z-index:4100; }

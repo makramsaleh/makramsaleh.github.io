@@ -15,19 +15,19 @@ function initAllAudio()
 	  preload:true
 	});
 	SOUND_MOVE = new Howl({
-	  src: ['assets/sounds/move.webm'],
+	  src: ['assets/sounds/move.mp3'],
 	  preload:true
 	});
 	SOUND_FREEZE = new Howl({
-	  src: ['assets/sounds/freeze.webm'],
+	  src: ['assets/sounds/freeze.mp3'],
 	  preload:true
 	});
 	SOUND_COIN = new Howl({
-	  src: ['assets/sounds/coin.webm'],
+	  src: ['assets/sounds/coin.mp3'],
 	  preload:true
 	});
 	SOUND_CAPTURE = new Howl({
-	  src: ['assets/sounds/capture.webm'],
+	  src: ['assets/sounds/capture.mp3'],
 	  preload:true
 	});
 	SOUND_GAMEOVER = new Howl({
